@@ -1,0 +1,175 @@
+% CONTRIBUTION: Q1 journal draft — FinLearn Guard (paste into Overleaf, compile with pdfLaTeX).
+% Target: applied Q1 (Expert Systems with Applications / Computers & Security).
+% Status: system + detection evals complete; Eval-B human study = protocol only (fill §5.5 after N=30).
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage{graphicx,amsmath,booktabs,hyperref,url}
+\usepackage[utf8]{inputenc}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\title{FinLearn Guard: A Closed-Loop Agentic Platform Unifying Real-Time Cyber Threat Detection and Personalized Guided Response for Finance Staff}
+\author{Poly Rani Ghosh\textsuperscript{1,*} \and Koushiq Chowdhury\textsuperscript{1} \\
+\small \textsuperscript{1}Department of Computer Science and Engineering, Notre Dame University Bangladesh, Dhaka, Bangladesh \\
+\small \textsuperscript{*}Corresponding author: [email to fill] }
+\date{\today}
+\begin{document}
+\maketitle
+\begin{abstract}
+Finance employees routinely fall for phishing, one-time-password (OTP) scams, business email
+compromise (BEC), SQL injection (SQLi), cross-site scripting (XSS) and malware lures, while
+security training remains disconnected from live detection. We present FinLearn Guard, a single-server
+FastAPI platform that closes the loop: threat in $\rightarrow$ hybrid detection (offline rules +
+large-language-model verdict with a safety lock) $\rightarrow$ WebSocket live alert to all browsers
+$\rightarrow$ personalized support guide rendered as text, voice (edge-tts) and slide video (moviepy)
+$\rightarrow$ persisted event with visible risk. The detector covers a 7-kind taxonomy
+(phishing, otp, bec, sqli, xss, malware, safe) with deterministic guards: score $\geq 0.6$ is never
+\emph{safe} and SQLi/XSS/malware are always high severity. On a 70-case 7-kind set the hybrid reaches
+binary accuracy 1.000 (F1 1.000) with kind-exact accuracy 0.943 (sqli/xss/malware/safe 10/10; all
+errors confined to the phishing/otp/bec family), against a rules-only F1 of 0.929 that fails BEC
+(6/10). A 1,995-row professional synthetic set (v2, disclosed) confirms pipeline scale (rules
+acc.\ 0.957). No prior system combines detection, live push and multi-modal teaching in one
+auditable loop; we release code, dataset builder and reproduce scripts.
+\end{abstract}
+
+\noindent\textbf{Keywords:} agentic AI; phishing detection; financial fraud; personalized tutoring;
+large language models; real-time WebSocket; cybersecurity education.
+
+\section{Introduction}
+Problem: finance staff face OTP, invoice/CEO and QR lures daily; training slides are separate from
+the detector, so alerts never become lessons and lessons never reflect live threats. Gap: recent
+agentic detectors (SAGE \cite{sage2026}, MemoPhishAgent \cite{memophish2026}, CLASP \cite{clasp2025})
+detect but do not teach; tutoring systems (SENSAI \cite{sensai2025}, SYNAPSE \cite{synapse2026},
+CyberMentor \cite{cybermentor2025}) teach but ingest no live feed; benchmarks (Fraud-R1
+\cite{fraudr12025}, MultiAgentFraudBench \cite{mafb2025}, Finance Agent Benchmark \cite{finagentbench2025})
+evaluate but build no loop. Contribution: (1) a 7-kind safety-locked hybrid detector;
+(2) a closed-loop architecture (one JSON shape, one database, one server) binding detection to
+personalized text/voice/video guidance; (3) measured tables on 70 + 1,995 cases with honest
+synthetic disclosure; (4) an N=30 learning-study protocol ready to run. Scope is text-borne
+finance attacks; raw packet sniffing and avatar video are explicit non-goals.
+
+\section{Related Work}
+\textbf{Pillar A — agentic fraud/finance.} SAGE \cite{sage2026} (3-agent classifier, +40.86\% F1),
+risk-first finance teams \cite{riskfirst2026}, AMLNet \cite{amlnet2025}, AuditAgent (ICAIF'25)
+\cite{auditagent2025}, AgenticCyber \cite{agenticcyber2025}, MALCDF \cite{malcdf2025}, Hmimou et
+al.\ (IEEE'25) \cite{hmimou2025}, CyLens \cite{cylens2025}, TradingAgents \cite{tradingagents2024}.
+\textbf{Pillar B — LLM phishing/fraud detection.} User-centric RAG (F1 0.9703, $-$66.7\% FP)
+\cite{usercentric2026}, LLM-PEA multi-vector limits \cite{llmpea2025}, prompt-engineering guide
+\cite{ji2025}, CLASP cost-optimized agent \cite{clasp2025}, Heiding et al.\ personalized intent
+\cite{heiding2024}, FinFraud-LLM limits vs XGBoost \cite{finfraud2025}, FinFRE-RAG tabular grounding
+\cite{finfre2025}. \textbf{Pillar C — personalized tutoring.} SENSAI \cite{sensai2025}, SYNAPSE
+detect-understand-remediate loop \cite{synapse2026}, own-code CWE injection (N=71)
+\cite{frazier2026}, CurricuLLM \cite{curricullm2026}, CyberMentor \cite{cybermentor2025}, CyberQ
+KG+LLM (AAAI'24) \cite{cyberq2024}. \textbf{Pillar D — benchmarks.} Fraud-R1 (8,564 cases)
+\cite{fraudr12025}, MultiAgentFraudBench (28 scenarios) \cite{mafb2025}, FinSafetyBench
+\cite{finsafety2026}, XFinBench (4,235) \cite{xfinbench2025}, FinBen (NeurIPS'24) \cite{finben2024},
+Finance Agent Benchmark (o3 only 46.8\%) \cite{finagentbench2025}, InvestorBench (ACL'25)
+\cite{investorbench2025}. Table~\ref{tab:gap} positions us: detectors lack teaching; tutors lack
+live feed; we bind both with persisted risk. Full 31-paper map: \texttt{docs/RELATED\_2024\_2026.md}.
+
+\begin{table}[h]\centering\caption{Gap matrix (representative).}\label{tab:gap}
+\begin{tabular}{@{}lccc@{}}\toprule
+System & Detects live & Teaches fix (T/V/V) & Persisted risk \\\midrule
+SAGE \cite{sage2026} & yes & no & model only \\
+User-centric RAG \cite{usercentric2026} & yes & no & no \\
+SYNAPSE \cite{synapse2026} & lab-only & yes (hints) & course grade \\
+Fraud-R1 \cite{fraudr12025} & eval & no & no \\
+\textbf{FinLearn Guard (ours)} & \textbf{yes + WS push} & \textbf{yes (steps/voice/video)} & \textbf{yes (Atlas)} \\\bottomrule
+\end{tabular}\end{table}
+
+\section{Methodology}
+\subsection{Taxonomy} Seven kinds: \texttt{phishing} (generic lure), \texttt{otp} (OTP/vishing/QR),
+\texttt{bec} (invoice/wire/CEO/gift-card), \texttt{sqli}, \texttt{xss}, \texttt{malware}
+(ransomware/.exe/.apk/short-link), \texttt{safe}. Kinds drive prompts, pools and graphs.
+\subsection{Closed loop} POST \texttt{/api/threats} $\rightarrow$ detector $\rightarrow$ alerter (save +
+risk bump + WS broadcast \texttt{/ws/alerts}) $\rightarrow$ dashboard feed/inspector/graphs;
+POST \texttt{/api/support/ask} $\rightarrow$ diagnose (screen + detect + LLM guide + scrub) $\rightarrow$
+steps/voice/video saved as event. One MongoDB (Atlas) holds employees, threat\_events, devices.
+\subsection{Hybrid detector} Step 1 rules: 14 regex rows $\rightarrow$ score $0..1$ + signals (offline,
+$\sim$0 ms). Step 2 LLM (OpenRouter \texttt{mistralai/ministral-8b-2512}, \texttt{detector.txt}):
+\texttt{\{kind, verdict, severity, reason\}}. Step 3 safety override: score $\geq 0.6$ never safe.
+Step 4 medium stabilizer: mild 0.15--0.59 safe $\rightarrow$ phishing/medium; sqli/xss/malware forced
+high. Missing key returns \texttt{verdict=error} (no silent fallback) by design.
+\subsection{Support writer} \texttt{support.txt} + per-kind pools (self/BEC/OTP/malware/dev) with
+deflection scrub (never ``contact IT''; every step self-actionable). Voice: edge-tts mp3 cached by
+hash; video: moviepy slide mp4 (5 steps max) else honest slide cards.
+
+\section{Implementation}
+FastAPI + Jinja2 SSR + REST + WebSocket; MongoDB Atlas; one OpenRouter gateway
+(\texttt{src/llm/client.py}); stdlib endpoint agent (register/heartbeat); navy premium UI
+(Inter, inspector with danger meter, per-minute + perf graphs); pytest 3/3; Render/Docker deploy
+(\texttt{live/}); 20 Simulate samples covering all 7 kinds. Reproduce (no key):
+\texttt{pytest tests -q}; \texttt{python -m tests.eval\_big}.
+
+\section{Experiments}
+\subsection{Setup} Windows 11, Python 3.13 64-bit venv, local Uvicorn :8000, live OpenRouter key +
+Atlas. Eval A: seed70-7kind (10/kind), full LLM. Eval-Big: \texttt{labels2000\_v2.csv} (1,995 rows,
+professional full-name sentences, disclosed synthetic), 80/20 split, rules + TF-IDF centroid ML
+(no LLM cost).
+\subsection{Eval A results (Table~\ref{tab:a})} Hybrid binary 1.000/1.000/1.000, kind 0.943;
+rules 0.886/F1 0.929 (BEC 6/10). All hybrid errors inside phishing family; sqli/xss/malware/safe
+perfect. Latency: rules $\sim$0 ms, hybrid $\sim$1.3 s (free-tier LLM).
+\begin{table}[h]\centering\caption{Eval A (n=70).}\label{tab:a}
+\begin{tabular}{@{}lccccc@{}}\toprule
+Baseline & Acc & P & R & F1 & kind \\\midrule
+rules-only & 0.886 & 1.000 & 0.867 & 0.929 & 0.886 \\
+llm-only & 1.000 & 1.000 & 1.000 & 1.000 & 0.943 \\
+hybrid & 1.000 & 1.000 & 1.000 & 1.000 & 0.943 \\\bottomrule
+\end{tabular}\end{table}
+\subsection{Eval-Big results} Rules binary acc 0.957, F1 0.975 (17 FN / 399); centroid kind 1.000.
+Disclosure: v2 slot-fill is too regular, so 1.000 measures harness health, not SOTA victory;
+public IEEE-CIS/Fraud-R1 swap-in is required before any superiority claim.
+\subsection{Ablation} Removing safety-lock reintroduces LLM ``safe'' on $\geq 0.6$ lures; removing
+medium stabilizer drops mild-lure recall; removing RAG/prompt kind splits kind accuracy toward
+rules-only BEC levels. (Full matrix with real data: future.)
+\subsection{Learning protocol (pending humans)} \texttt{docs/EVAL\_B\_PACK.md}: N=30, control (static
+tips) vs /support (steps+voice+video), 10-Q pre/post, target +15\% uplift $p<0.05$. [TO FILL after run.]
+\subsection{Threats to validity} Synthetic v2 overfit; seed70 small; free-tier latency variance;
+single-site students for Eval B; LLM needs key + net.
+
+\section{Discussion}
+The phishing/otp/bec overlap is the hard core: rules under-fire BEC, LLM occasionally
+over-generalizes generic prize vs OTP wording. Safety-lock buys recall 1.000 at negligible FP cost
+on seed70. Limits (honest): no packet sniff (REST+WS prototype), Render cold start $\sim$30 s,
+slide video not avatar, English-only prompts.
+
+\section{Conclusion and Future Work}
+We delivered and measured a 6-attack closed loop with honest tables and a runnable release.
+Next: real-data swap + XGBoost/SOTA baselines, N=30 study, multilingual voice, packet agent,
+admin analytics. Code + builders + tables: \url{https://github.com/Koushiq-Sourav/finlearn_gurd.git}.
+
+\section*{Acknowledgments}
+Supervision by Poly Rani Ghosh, Notre Dame University Bangladesh. Open-source models, edge-tts,
+moviepy and public benchmark authors gratefully acknowledged.
+
+\begin{thebibliography}{99}
+\bibitem{sage2026} Y.~Chen et al., SAGE: LLM-driven self reflective agentic framework for fraud detection, arXiv:2606.08146, 2026.
+\bibitem{riskfirst2026} From tasks to teams: risk-first evaluation for multi-agent LLM systems in finance, ACL Findings, pp.\ 38819--38857, 2026.
+\bibitem{amlnet2025} AMLNet: knowledge-based multi-agent framework for AML, arXiv:2509.11595, 2025.
+\bibitem{auditagent2025} S.~Bai et al., AuditAgent: expert-guided multi-agent reasoning for fraud evidence, ICAIF'25, 2025.
+\bibitem{agenticcyber2025} S.~Roy, AgenticCyber: GenAI multi-agent multimodal threat detection, arXiv:2512.06396, 2025.
+\bibitem{malcdf2025} MALCDF: distributed multi-agent LLM framework for real-time cyber defense, arXiv:2512.14846, 2025.
+\bibitem{hmimou2025} Y.~Hmimou et al., Multi-agent system for threat detection and correlation using LLMs, IEEE, 2025.
+\bibitem{cylens2025} CyLens: reinventing CTI in agentic LLM paradigm, arXiv:2502.20791, 2025.
+\bibitem{tradingagents2024} TradingAgents: multi-agent LLM financial trading framework, arXiv:2412.20138, 2024.
+\bibitem{usercentric2026} A.~Al Barwani et al., User-centric phishing detection: RAG + LLM, arXiv:2601.21261, 2026.
+\bibitem{memophish2026} MemoPhishAgent: memory-augmented multi-modal LLM agent for phishing URL, ACL Industry, 2026.
+\bibitem{llmpea2025} N.~Hasan et al., Phishing email detection using LLMs (LLM-PEA), arXiv:2512.10104, 2025.
+\bibitem{ji2025} F.~Ji and D.~Kim, How to effectively use LLMs for phishing detection?, arXiv:2511.09606, 2025.
+\bibitem{clasp2025} F.~Trad and A.~Chehab, CLASP: cost-optimized agentic phishing detection, arXiv:2510.18585, 2025.
+\bibitem{heiding2024} F.~Heiding et al., Personalized phishing and intent detection, arXiv:2412.00586, 2024.
+\bibitem{finfraud2025} FinFraud-LLM: exploring LLMs for financial fraud detection, IEEE ICDMW Workshops, 2025.
+\bibitem{finfre2025} Understanding structured financial data with LLMs (FinFRE-RAG), arXiv:2512.13040, 2025.
+\bibitem{sensai2025} C.~Nelson et al., SENSAI: LLMs as applied cybersecurity tutors, SIGCSE'25, 2025.
+\bibitem{synapse2026} G.~Ferrara and A.~Sami, SYNAPSE: multi-LLM AI tutor for secure software development, ICSME'26, arXiv:2607.14601, 2026.
+\bibitem{frazier2026} M.~Frazier and K.~Damevski, Personalizing secure programming education with LLM-injected vulnerabilities, arXiv:2604.13955, 2026.
+\bibitem{curricullm2026} CurricuLLM: personalized workforce-aligned cyber curricula, arXiv:2601.04940, 2026.
+\bibitem{cybermentor2025} CyberMentor: AI learning platform for diverse cyber students, arXiv:2501.09709, 2025.
+\bibitem{cyberq2024} G.~Agrawal et al., CyberQ: Q\&A generation with KG+LLM, AAAI'24, 2024.
+\bibitem{fraudr12025} S.~Yang et al., Fraud-R1: multi-round fraud/phishing benchmark, ACL Findings, arXiv:2502.12904, 2025.
+\bibitem{mafb2025} When AI agents collude: MultiAgentFraudBench, arXiv:2511.06448, 2025.
+\bibitem{finsafety2026} FinSafetyBench: LLM safety in finance, arXiv:2605.00706, 2026.
+\bibitem{xfinbench2025} Z.~Zhang et al., XFinBench: complex financial problem solving, ACL'25, arXiv:2508.15861, 2025.
+\bibitem{finben2024} FinBen: holistic financial benchmark for LLMs, NeurIPS'24 Datasets \& Benchmarks, 2024.
+\bibitem{finagentbench2025} A.~Bigeard et al., Finance Agent Benchmark, arXiv:2508.00828, 2025.
+\bibitem{investorbench2025} InvestorBench: financial decision-making with LLM agents, ACL'25 long, 2025.
+\end{thebibliography}
+\end{document}
