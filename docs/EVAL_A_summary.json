@@ -1,0 +1,81 @@
+{
+  "dataset": "seed70-7kind",
+  "n": 70,
+  "binary": {
+    "rules": {
+      "n": 70,
+      "tp": 52,
+      "tn": 10,
+      "fp": 0,
+      "fn": 8,
+      "acc": 0.886,
+      "prec": 1.0,
+      "rec": 0.867,
+      "f1": 0.929,
+      "fp_rate": 0.0,
+      "avg_ms": 0.0,
+      "errors": 0,
+      "kind_acc": 0.886
+    },
+    "llm": {
+      "n": 70,
+      "tp": 60,
+      "tn": 10,
+      "fp": 0,
+      "fn": 0,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "fp_rate": 0.0,
+      "avg_ms": 1091.8,
+      "errors": 0,
+      "kind_acc": 0.943
+    },
+    "hybrid": {
+      "n": 70,
+      "tp": 60,
+      "tn": 10,
+      "fp": 0,
+      "fn": 0,
+      "acc": 1.0,
+      "prec": 1.0,
+      "rec": 1.0,
+      "f1": 1.0,
+      "fp_rate": 0.0,
+      "avg_ms": 1304.5,
+      "errors": 0,
+      "kind_acc": 0.943
+    }
+  },
+  "per_kind": {
+    "rules": {
+      "phishing": "8/10",
+      "otp": "10/10",
+      "bec": "6/10",
+      "sqli": "9/10",
+      "xss": "9/10",
+      "malware": "10/10",
+      "safe": "10/10"
+    },
+    "llm": {
+      "phishing": "7/10",
+      "otp": "10/10",
+      "bec": "9/10",
+      "sqli": "10/10",
+      "xss": "10/10",
+      "malware": "10/10",
+      "safe": "10/10"
+    },
+    "hybrid": {
+      "phishing": "7/10",
+      "otp": "10/10",
+      "bec": "9/10",
+      "sqli": "10/10",
+      "xss": "10/10",
+      "malware": "10/10",
+      "safe": "10/10"
+    }
+  },
+  "note": "rules>=0.30 binary only; llm/hybrid kind-exact; errors counted as miss"
+}

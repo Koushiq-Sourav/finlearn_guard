@@ -1,0 +1,55 @@
+<!-- CONTRIBUTION: Shared topbar, LIVE pill, and scripts on every page. -->
+<!DOCTYPE html>
+<!-- ============================================================
+  BASE LAYOUT - used by EVERY page (dashboard, support, users, devices).
+  Each page fills ONLY the blocks below:
+    - "title"   -> browser tab text
+    - "content" -> page body inside <main class="wrap">
+  Everything else here (topbar, toast, float ball) shows on all pages.
+============================================================ -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- PAGE TITLE (each page overrides this block) -->
+<title>{% block title %}FinLearn Guard{% endblock %}</title>
+<!-- GLOBAL STYLESHEET (Section map lives at top of style.css) -->
+<link rel="stylesheet" href="/static/css/style.css?v=10">
+</head>
+<body>
+<!-- BACKGROUND DECOR - 3 floating blurred orbs, behind everything (CSS §1) -->
+<div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<!-- TOPBAR (CSS §2) - sticky pill bar, same on every page:
+     .brand    = logo + site name (left)
+     .nav      = page links: Dashboard / All Users / Devices + Support button (middle)
+     .live-pill = WebSocket status: grey "connecting" -> green "LIVE" (right, driven by app.js §3) -->
+<header class="topbar">
+  <div class="brand"><span class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3z" stroke="#22d3ee" stroke-width="1.8" fill="rgba(34,211,238,.15)"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span> FinLearn Guard</div>
+  <nav class="nav">
+    <a href="/" class="nav-link">Dashboard</a>
+    <a href="/users" class="nav-link">All Users</a>
+    <a href="/devices" class="nav-link">Devices</a>
+    <a href="/support" class="btn-support">Support</a>
+  </nav>
+  <div class="live-pill" id="livePill"><span class="dot"></span><span id="liveText">connecting…</span></div>
+</header>
+
+<!-- PAGE BODY - each page template injects its sections here -->
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+
+<!-- TOAST (CSS §9) - small popup bottom-center for messages ("Guide ready", "Added ...").
+     Filled by toast() in app.js §1, and by support page script. -->
+<div class="toast" id="toast"></div>
+
+<!-- FLOATING SUPPORT BALL (CSS §9) - "?" shortcut to /support, visible on every page.
+      #fbDot lights green when the live WebSocket is connected (app.js §3). -->
+<a href="/support" class="float-ball" title="Cyber Support"><span class="fb-dot" id="fbDot"></span>?</a>
+
+<!-- GLOBAL SCRIPT (app.js section map at its top): clock, counters, search,
+     WebSocket pill, live feed, graph, add-person form. -->
+<script src="/static/js/app.js?v=9"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+{% extends "layouts/base.html" %}
+<!-- CONTRIBUTION: Ask box plus Steps/Voice/Video answer card. -->
+{% block title %}Cyber Support — FinLearn Guard{% endblock %}
+{% block content %}
+<!-- ============================================================
+  SUPPORT PAGE (/support) - 2 blocks: HERO + ASK card.
+  ASK flow: textarea #q -> #btnAsk -> POST /api/support/ask ->
+  #answer card shows ONLY the picked format (single pick = no tabs).
+============================================================ -->
+
+<!-- BLOCK 1: HERO - page headline only (CSS §4) -->
+<section class="hero">
+  <div>
+    <h1>Ask. <span>Auto-diagnose. Guided fix.</span></h1>
+    <p class="sub">Type any cyber/PC problem. The system finds the issue (rules + detector + free AI) and guides you by text, voice & video.</p>
+  </div>
+</section>
+
+<!-- BLOCK 2: ASK card (CSS §8)
+     PART A - question box: #q textarea + .feed-ctl row (#btnAsk diagnose button
+              + 3 format pills #fmtSteps/#fmtVoice/#fmtVideo — pick BEFORE asking,
+              multi-toggle, all ON by default; replaces old tiny checkboxes)
+     PART B - #answer card (hidden until first answer): #aProblem title,
+              #aSev severity badge + #aReason signals, .tabs switcher (only for
+              picked formats; hidden when single format picked),
+              3 panes: #aSteps list / #aVoice audio / #aVideo video+slides -->
+<section class="card">
+  <div class="card-head">
+    <h2>Ask support</h2>
+    <a href="/">← Dashboard</a>
+  </div>
+  <!-- PART A: question input -->
+  <div class="support-box">
+    <textarea id="q" rows="3" placeholder="e.g. OTP mail asking verify urgently — or paste SQL like ' OR 1=1 -- or XSS like <script>alert(1)</script> — what do I do?"></textarea>
+    <div class="feed-ctl">
+      <button id="btnAsk" class="btn-fire">Diagnose & guide me</button>
+      <button id="fmtSteps" class="tab on" aria-pressed="true">Steps</button>
+      <button id="fmtVoice" class="tab on" aria-pressed="true">Voice</button>
+      <button id="fmtVideo" class="tab on" aria-pressed="true">Video</button>
+    </div>
+  </div>
+  <!-- PART B: answer (revealed by script below) -->
+  <div id="answer" class="answer" hidden>
+    <h3 id="aProblem"></h3>
+    <p><span id="aSev" class="badge medium"></span> <span id="aReason" class="dim"></span></p>
+    <div class="tabs">
+      <button class="tab on" data-tab="steps">Steps</button>
+      <button class="tab" data-tab="voice">Voice</button>
+      <button class="tab" data-tab="video">Video</button>
+    </div>
+    <ol id="aSteps" class="pane"></ol>
+    <div id="aVoice" class="pane" hidden></div>
+    <div id="aVideo" class="pane" hidden></div>
+  </div>
+</section>
+
+<script>
+// ---- PAGE SCRIPT: support page only (tabs + ask flow) ----
+
+// FORMAT PILLS (beside Diagnose) - multi-toggle, picked BEFORE asking.
+// Click toggles .on + aria-pressed. At least one must stay ON.
+[['fmtSteps'], ['fmtVoice'], ['fmtVideo']].forEach(([id]) => {
+  const p = document.getElementById(id);
+  p.addEventListener('click', () => {
+    const on = document.querySelectorAll('.feed-ctl .tab.on').length;
+    if (p.classList.contains('on') && on <= 1) { toast('Keep at least one format'); return; }
+    p.classList.toggle('on');
+    p.setAttribute('aria-pressed', p.classList.contains('on'));
+  });
+});
+const want = (id) => document.getElementById(id).classList.contains('on');
+// ANSWER TAB SWITCHER (scoped to #answer only - format pills above are separate).
+document.querySelectorAll('#answer .tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('#answer .tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  const k = t.dataset.tab;
+  document.getElementById('aSteps').hidden = (k !== 'steps');
+  document.getElementById('aVoice').hidden = (k !== 'voice');
+  document.getElementById('aVideo').hidden = (k !== 'video');
+}));
+
+// PART 2: ASK FLOW - #btnAsk click -> POST question -> fill #answer panes.
+const btn = document.getElementById('btnAsk');
+btn.addEventListener('click', async () => {
+  const q = document.getElementById('q').value.trim();
+  if (!q) { toast('Type your problem first'); return; }   // toast() comes from global app.js §1
+  btn.disabled = true; toast('Diagnosing…');
+  try {
+    // send question to Tier-3 support agent
+    const r = await fetch('/api/support/ask', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: q, employee_id: 'E001'}),
+    });
+    const d = await r.json();
+    // backend error (usually missing OPENROUTER_API_KEY) -> show reason, stop
+    if (d.verdict === 'error') { toast(d.reason || 'Set OPENROUTER_API_KEY in .env'); btn.disabled = false; return; }
+    // fill header: problem title + severity badge + detector signals
+    const box = document.getElementById('answer'); box.hidden = false;
+    document.getElementById('aProblem').textContent = d.problem || 'Guide';
+    const sev = document.getElementById('aSev'); sev.textContent = d.severity || ''; sev.className = 'badge ' + (d.severity || 'medium');
+    document.getElementById('aReason').textContent = (d.signals || []).join(', ') + (d.reason ? ' · ' + d.reason : '');
+    // fill STEPS pane: numbered cards from d.steps
+    const ol = document.getElementById('aSteps'); ol.innerHTML = '';
+    (d.steps || []).forEach(s => { const li = document.createElement('li'); li.textContent = s; ol.appendChild(li); });
+    // fill VOICE pane: mp3 player if picked + returned, else the error/fallback text
+    const vv = document.getElementById('aVoice'); vv.innerHTML = '';
+    if (want('fmtVoice') && d.audio_url) {
+      vv.innerHTML = '<audio controls controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="' + d.audio_url + '"></audio>';
+    } else { vv.innerHTML = '<p class="dim">' + (d.audio_error || 'Voice off — pick Voice beside Diagnose.') + '</p>'; }
+    // fill VIDEO pane: mp4 player if picked + returned, then chapter slides below it
+    const vd = document.getElementById('aVideo'); vd.innerHTML = '';
+    if (want('fmtVideo') && d.video_url) {
+      vd.innerHTML = '<video controls controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="' + d.video_url + '"></video>';
+    } else if (d.video_error) { vd.innerHTML = '<p class="dim">' + d.video_error + '</p>'; }
+    else { vd.innerHTML = '<p class="dim">Video off — pick Video beside Diagnose.</p>'; }
+    (d.slides || []).forEach(s => {
+      const div = document.createElement('div'); div.className = 'slide';
+      div.innerHTML = '<b>' + s.n + '</b><span>' + s.text + '</span>'; vd.appendChild(div);
+    });
+    // show ONLY picked formats: hide unpicked tab buttons, hide tabs row on single pick
+    const picked = [];
+    if (want('fmtSteps')) picked.push('steps');
+    if (want('fmtVoice')) picked.push('voice');
+    if (want('fmtVideo')) picked.push('video');
+    document.querySelectorAll('#answer .tab').forEach(t => { t.style.display = picked.includes(t.dataset.tab) ? '' : 'none'; });
+    document.querySelector('#answer .tabs').style.display = (picked.length <= 1) ? 'none' : '';
+    document.getElementById('aSteps').hidden = (picked[0] !== 'steps');
+    document.getElementById('aVoice').hidden = (picked[0] !== 'voice');
+    document.getElementById('aVideo').hidden = (picked[0] !== 'video');
+    document.querySelectorAll('#answer .tab').forEach(t => t.classList.toggle('on', t.dataset.tab === picked[0]));
+    toast('Guide ready — ' + (d.severity || ''));
+  } catch (e) { toast('Request failed'); }
+  btn.disabled = false;
+});
+</script>
+{% endblock %}

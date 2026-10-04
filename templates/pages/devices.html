@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+<!-- CONTRIBUTION: Monitored-PC board with 10-second auto-refresh. -->
+{% block title %}Devices — FinLearn Guard{% endblock %}
+{% block content %}
+<!-- ============================================================
+  DEVICES PAGE (/devices) - PCs running agent/agent.py.
+  #devCount  = "N registered" counter (updated by script below)
+  #devTable  = server-rendered rows first, then refreshed every 10s
+              via GET /api/devices (script below). .badge green = online.
+  .foot note = where the install files live.
+============================================================ -->
+<section class="card">
+  <div class="card-head">
+    <h2>Monitored Devices</h2>
+    <span class="dim" id="devCount">{{ devices|length }} registered</span>
+  </div>
+  <p class="dim">Install the agent on a device and it appears here with live heartbeat. Green = seen in last 2 min.</p>
+  <table id="devTable">
+    <thead><tr><th>Device</th><th>User</th><th>Host</th><th>IP</th><th>Conns</th><th>Seen</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for d in devices %}
+      <tr>
+        <td>{{ d.device_id }}</td><td>{{ d.employee_id }}</td><td>{{ d.hostname }}</td>
+        <td>{{ d.ip }}</td><td>{{ d.conns }}</td><td>{{ d.last_seen }}</td>
+        <td><span class="badge {{ 'low' if d.status == 'online' else 'high' }}">{{ d.status }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="foot">Agent folder: <span class="dim">E:\finlearn-guard-final\agent\</span> — copy to the target PC and run <span class="dim">install.bat</span>.</p>
+</section>
+<script>
+// ---- PAGE SCRIPT: devices page only ----
+// AUTO-REFRESH: every 10s re-fetch /api/devices and rebuild #devTable rows
+// + update #devCount. Online rows get green (.low) badges, offline red (.high).
+setInterval(async () => {
+  try {
+    const r = await fetch('/api/devices');
+    const d = await r.json();
+    const tb = document.querySelector('#devTable tbody');
+    if (!tb) return;
+    tb.innerHTML = d.devices.map(x =>
+      '<tr><td>' + x.device_id + '</td><td>' + (x.employee_id || '') + '</td><td>' + (x.hostname || '') +
+      '</td><td>' + (x.ip || '') + '</td><td>' + (x.conns || 0) + '</td><td>' + (x.last_seen || '') +
+      '</td><td><span class="badge ' + (x.status === 'online' ? 'low' : 'high') + '">' + x.status + '</span></td>'
+    ).join('') || '<tr><td colspan="7" class="dim">No devices yet — install the agent.</td></tr>';
+    const c = document.getElementById('devCount');
+    if (c) c.textContent = d.devices.length + ' registered';
+  } catch (e) { /* ignore */ }
+}, 10000);
+</script>
+{% endblock %}

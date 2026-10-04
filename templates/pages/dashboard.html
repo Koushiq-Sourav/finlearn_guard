@@ -1,0 +1,126 @@
+{% extends "layouts/base.html" %}
+<!-- CONTRIBUTION: Hero, live feed, inspector, graphs, and employees. -->
+{% block title %}Dashboard — FinLearn Guard{% endblock %}
+{% block content %}
+<!-- ============================================================
+  DASHBOARD PAGE (/) - 3 blocks: HERO, LIVE FEED card, EMPLOYEES card.
+============================================================ -->
+
+<!-- BLOCK 1: HERO - headline + 2 buttons + 3 stat counters (CSS §4) -->
+<section class="hero">
+  <div>
+    <p class="kicker">CLOSED-LOOP SECURITY TRAINING</p>
+    <h1>Threat in. Lesson out. <span>Risk down.</span></h1>
+    <p class="sub">Threat analysis below + cyber support guide — one connected system.</p>
+    <!-- HERO BUTTONS: .btn-support.big = gradient Support button -> /support ;
+         .nav-link = gradient link jumping to #live feed below -->
+    <div class="hero-btns">
+      <a href="/support" class="btn-support big">Support</a>
+      <a href="#live" class="nav-link">View live analysis</a>
+    </div>
+  </div>
+  <!-- STAT COUNTERS: .num counts up on load (app.js §1), #alertCount ticks on each WS alert (app.js §3),
+       #clock ticks every second (app.js §1) -->
+  <div class="stats">
+    <div class="stat"><p class="num" data-count="{{ employees|length }}">0</p><p class="lbl">employees</p></div>
+    <div class="stat"><p class="num" data-count="0" id="alertCount">0</p><p class="lbl">live alerts</p></div>
+    <div class="stat"><p class="num" id="clock">--:--:--</p><p class="lbl">local time</p></div>
+  </div>
+</section>
+
+<!-- BLOCK 2: LIVE THREAT FEED card (CSS §6 + §11, logic app.js §4)
+     TOP GRAPH (#graph) = attacks per minute: bar height + number = attack count,
+                          bottom label = time (HH:MM)
+     #btnSim  = red "Simulate Attack" button -> fires 1 random sample threat
+     #autoFeed = checkbox -> auto-fires a sample every 10s while ticked
+     #feed    = alert rows (CLICK any row -> inspector below shows how it was caught)
+     INSPECTOR (#inspector, CSS §11, app.js §4f) = 5-step "how it was caught" box:
+               1 Received / 2 Rules+score / 3 AI verdict / 4 Handling / 5 Done.
+               #btnNext reveals one step at a time (class demo), #btnAll shows all.
+     CUSTOM TEST (.sim-row): type your own title+body -> #btnCustom fires it.
+     BOTTOM GRAPH (#perfGraph) = overall performance: total detections split
+                          by severity (HIGH red / MEDIUM amber / LOW green),
+                          fed by GET /api/perf; #perfTotal shows the grand total -->
+<section class="card live" id="live">
+  <div class="card-head">
+    <h2>Live threat feed</h2>
+    <div class="feed-ctl">
+      <button id="btnSim" class="btn-fire">Simulate Attack</button>
+      <label class="auto"><input type="checkbox" id="autoFeed" checked> auto-feed 10s</label>
+    </div>
+  </div>
+  <ul id="feed" class="feed"><li class="dim">No threats yet — fire one above.</li></ul>
+  <!-- CUSTOM TEST ROW (.sim-row, CSS §11): type your own attack -> Test this button -->
+  <div class="sim-row">
+    <input id="customTitle" type="text" placeholder="Attack title — e.g. Urgent verify OTP" maxlength="120">
+    <input id="customBody" type="text" placeholder="Attack details — e.g. click http://evil.example with password" maxlength="300">
+    <button id="btnCustom" class="btn-fire">Test this</button>
+  </div>
+  <!-- INSPECTOR BOX (.inspector, CSS §11): click any feed row to see its 5 steps here -->
+  <div id="inspector" class="inspector">
+    <div class="insp-head">
+      <h3>How it was caught</h3>
+      <div class="insp-ctl">
+        <button id="btnNext" class="btn-add">Next step</button>
+        <button id="btnAll" class="nav-link" style="border:none;cursor:pointer">Show all</button>
+      </div>
+    </div>
+    <p id="inspTitle" class="dim">No attack picked yet — fire Simulate Attack or Test this.</p>
+    <ol id="inspSteps" class="insp-steps"></ol>
+  </div>
+  <!-- GRAPHS ROW (.graphs, CSS §6): two compact boxes side-by-side on desktop,
+       stacked on mobile. LEFT = attacks/min (#graph: count on bar, time below).
+       RIGHT = overall performance (#perfGraph HIGH/MEDIUM/LOW + #perfTotal).
+       One row takes ~half the vertical space of two stacked full-width graphs. -->
+  <div class="graphs">
+    <div class="graph-box">
+      <p class="graph-title">Attacks per minute — number = attacks, bottom = time</p>
+      <canvas id="graph" height="96"></canvas>
+    </div>
+    <div class="graph-box">
+      <p class="graph-title">Overall performance — detections by severity</p>
+      <canvas id="perfGraph" height="96"></canvas>
+      <p class="perf-total" id="perfTotal">Total detections: 0</p>
+    </div>
+  </div>
+</section>
+
+<!-- BLOCK 3: EMPLOYEES card (CSS §7 tables/badges, logic app.js §1 + §5)
+     #search   = instant filter for the table below
+     .btn-support (small) = link to full /users page
+     #addPerson = inline add form: #pName (required) #pDept #pId (auto E004+) #pRisk + .btn-add submit
+     #empTable = server-rendered rows (Jinja loop) + JS-prepended new rows; .badge colors risk -->
+<section class="card">
+  <div class="card-head">
+    <h2>Employees</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input id="search" type="search" placeholder="Search name, dept, risk…" autocomplete="off">
+      <a href="/users" class="btn-support" style="padding:8px 16px;font-size:13px">All Users</a>
+    </div>
+  </div>
+  <form id="addPerson" class="add-row">
+    <input id="pName" type="text" placeholder="Full name *" required maxlength="60">
+    <input id="pDept" type="text" placeholder="Dept / system (e.g. Finance-PC03)" maxlength="60">
+    <input id="pId" type="text" placeholder="ID (optional, auto E004+)" maxlength="12">
+    <select id="pRisk">
+      <option value="low">low</option>
+      <option value="medium">medium</option>
+      <option value="high">high</option>
+    </select>
+    <button type="submit" class="btn-add">+ Add person</button>
+  </form>
+  <p class="dim">Add people whose network / system needs analysis — they join the table + live analysis instantly.</p>
+  <table id="empTable">
+    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Risk</th></tr></thead>
+    <tbody>
+    {% for e in employees %}
+      <tr data-risk="{{ e.risk }}">
+        <td>{{ e.id }}</td><td>{{ e.name }}</td><td>{{ e.dept }}</td>
+        <td><span class="badge {{ e.risk }}">{{ e.risk }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="foot">Analysis + support connected — threats feed the LIVE pill, support guides the fix.</p>
+</section>
+{% endblock %}

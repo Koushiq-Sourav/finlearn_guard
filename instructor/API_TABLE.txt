@@ -1,0 +1,38 @@
+CONTRIBUTION: Every page, API, and curl example - course compliance proof.
+
+FINLEARN GUARD - API + PAGES TABLE (course compliance proof)
+============================================================
+
+PAGES (Jinja2, topbar has Dashboard + Support on every page):
+  GET  /            Dashboard: live feed + graph + employees + hero Support button
+  GET  /support     Cyber Support: ask box + Steps/Voice/Video tabs
+  GET  /users       Employees table (add employee form)
+  GET  /devices     Devices table (online/offline, heartbeat age)
+
+REST (FastAPI, also visible at /docs Swagger):
+  GET  /health                    {"ok": true} - deploy health check
+  GET  /api/employees             List seeded employees (Koushiq/Tumpa/Rahim)
+  POST /api/employees             {name, dept, id?, risk?} -> creates E004...
+  GET  /api/threats?limit=10      Recent threat_events (7 kinds: phishing/otp/bec/sqli/xss/malware/support)
+  POST /api/threats               {title, kind, body, employee_id} -> detector verdict
+  GET  /api/stats                 Per-minute counts for live graph
+  POST /api/support/ask           {question, employee_id} -> problem+steps+audio/video
+  POST /api/devices/register      {device_id, employee_id, hostname, ip, os_info}
+  POST /api/devices/heartbeat     {device_id, ip, conns} -> online/offline
+  GET  /api/devices               Device list with status
+
+REALTIME:
+  WS   /ws/alerts                 Broadcast on every threat + support answer
+                                  Dashboard + support tabs auto-update, no refresh
+
+STATIC/MEDIA:
+  GET  /static/css/style.css      Navy premium theme
+  GET  /static/js/app.js          Feed poll + WS connect + tabs
+  GET  /media/voice-*.mp3        Generated voice guides (edge-tts)
+  GET  /media/guide-*.mp4        Generated slide videos (moviepy)
+
+EXAMPLES (copy-paste for instructor):
+  curl http://127.0.0.1:8000/health
+  curl http://127.0.0.1:8000/api/employees
+  curl -X POST http://127.0.0.1:8000/api/threats -H "Content-Type: application/json" -d "{\"title\":\"Urgent verify OTP\",\"kind\":\"phishing\",\"body\":\"click http://evil.example\"}"
+  curl -X POST http://127.0.0.1:8000/api/support/ask -H "Content-Type: application/json" -d "{\"question\":\"My PC is slow after clicking a mail link\"}"

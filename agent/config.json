@@ -1,0 +1,7 @@
+{
+  "_contribution": "This PC's server address, IDs, and heartbeat speed for the agent.",
+  "server_url": "http://127.0.0.1:8000",
+  "device_id": "",
+  "employee_id": "",
+  "interval": 30
+}

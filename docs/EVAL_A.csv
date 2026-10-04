@@ -1,0 +1,71 @@
+title,label,pred,kind_pred,score,ms
+Urgent: verify your account now,phishing,phishing,phishing,0.75,889.1
+Password reset required,phishing,phishing,phishing,0.5,1214.9
+Account locked,phishing,phishing,phishing,1.0,1076.1
+You won a prize!,phishing,phishing,otp,0.75,1067.5
+Prize lottery winner,phishing,phishing,otp,0.6,1013.1
+Bank KYC suspend,phishing,phishing,phishing,0.4,980.2
+Free gift claim now,phishing,phishing,otp,0.65,1095.8
+Department quiz prize,phishing,phishing,phishing,0.3,918.5
+Alumni meet lucky draw,phishing,phishing,phishing,0.0,1021.8
+Customer survey reward,phishing,phishing,phishing,0.0,988.7
+OTP share needed,otp,phishing,otp,0.45,885.0
+WhatsApp OTP request,otp,phishing,otp,0.55,1170.4
+Missed call verify,otp,phishing,otp,0.9,911.8
+QR scan to verify,otp,phishing,otp,0.5,1026.2
+Vishing bank call,otp,phishing,otp,0.55,948.0
+Mobile recharge bonus,otp,phishing,otp,0.3,981.7
+OTP for parcel,otp,phishing,otp,0.3,1120.7
+Call back prize,otp,phishing,otp,0.85,933.4
+Voicemail password reset,otp,phishing,otp,0.55,1001.8
+Staff raffle second prize,otp,phishing,otp,0.6,1066.2
+Invoice #4471 payment due,bec,phishing,bec,0.15,1332.2
+CEO confidential transfer,bec,phishing,bec,0.6,901.7
+Vendor bank change,bec,phishing,bec,0.35,1014.8
+Gift card purchase,bec,phishing,bec,0.3,936.8
+iTunes card request,bec,phishing,bec,0.3,934.1
+Management request transfer,bec,phishing,bec,0.6,874.6
+Refund overpayment,bec,phishing,bec,0.15,982.6
+Payment details update,bec,phishing,bec,0.15,877.6
+Urgent supplier pay,bec,phishing,bec,0.35,1122.0
+Free gift for feedback,bec,phishing,phishing,0.15,1070.0
+Admission login bypass,sqli,phishing,sqli,0.7,1460.8
+Fee search dump,sqli,phishing,sqli,0.55,875.7
+Grade changed,sqli,phishing,sqli,0.4,1092.3
+Login 1=1,sqli,phishing,sqli,0.4,975.1
+Drop table probe,sqli,phishing,sqli,0.4,976.7
+Select from users,sqli,phishing,sqli,0.4,879.8
+Insert admin,sqli,phishing,sqli,0.4,923.6
+xp cmdshell,sqli,phishing,sqli,0.4,909.5
+Union select pass,sqli,phishing,sqli,0.7,871.3
+Comment bypass,sqli,phishing,sqli,0.0,908.5
+Wall post stole session,xss,phishing,xss,0.6,903.5
+Feedback keylogger,xss,phishing,xss,0.4,1034.5
+Review redirect,xss,phishing,xss,0.4,1001.1
+Comment cookie theft,xss,phishing,xss,0.4,1097.4
+Profile script,xss,phishing,xss,0.4,894.5
+Search reflect,xss,phishing,xss,0.4,1539.5
+Img payload,xss,phishing,xss,0.4,970.9
+JS link,xss,phishing,xss,0.4,1062.8
+Cookie popup,xss,phishing,xss,0.4,896.4
+Form hijack,xss,phishing,xss,0.0,1393.1
+Invoice exe attachment,malware,phishing,malware,0.55,1530.1
+APK install link,malware,phishing,malware,0.8,1183.2
+Ransomware decrypt pay,malware,phishing,malware,0.4,17812.0
+Trojan update,malware,phishing,malware,0.4,1240.1
+QR malware download,malware,phishing,malware,0.8,1800.2
+Short link gift,malware,phishing,malware,0.4,1654.0
+Spyware warning,malware,phishing,malware,0.4,1268.4
+Encrypted docs pay,malware,phishing,malware,0.4,864.2
+Free software crack,malware,phishing,malware,0.4,912.8
+USB found run,malware,phishing,malware,0.4,1035.8
+Team lunch Friday,safe,safe,safe,0.0,919.8
+Class routine spring,safe,safe,safe,0.0,996.8
+Library hours extended,safe,safe,safe,0.0,1957.3
+Lab report due,safe,safe,safe,0.0,885.9
+Bus schedule update,safe,safe,safe,0.0,1408.5
+Thesis feedback,safe,safe,safe,0.0,927.1
+Workshop invite,safe,safe,safe,0.0,917.6
+Exam seat plan,safe,safe,safe,0.0,1035.0
+Project demo slot,safe,safe,safe,0.0,913.0
+Seminar slides,safe,safe,safe,0.0,1028.9

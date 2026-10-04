@@ -1,0 +1,45 @@
+CONTRIBUTION: Exact 3-minute click path for the class demo.
+
+FINLEARN GUARD - 3-MINUTE LIVE DEMO SCRIPT (read aloud in class)
+================================================================
+
+SETUP (before class): double-click live\start_live.bat, open
+  http://127.0.0.1:8000/ in one tab, http://127.0.0.1:8000/support in another.
+  (Public URL version: same two links on your Render domain.)
+
+[0:00-0:30] LANDING - "This is FinLearn Guard, one FastAPI system."
+  Show / : topbar Dashboard + Support button, hero, live analysis feed,
+  employees Koushiq/Tumpa/Rahim, per-minute graph.
+  Say: "Website, detection, and support are one server, one DB."
+
+[0:30-1:15] DETECTION - "Watch realtime + how it was caught."
+  Click "Simulate Attack" on the dashboard. Feed pops WITHOUT refresh
+  (WebSocket /ws/alerts). CLICK the new row -> inspector below shows 5 steps:
+  1 Received, 2 Rules signals+score, 3 AI verdict, 4 Handling (DB id + risk),
+  5 Done with ms. Use "Next step" to walk 1-by-1 in class.
+  Type your own attack in the two boxes -> "Test this" fires it live.
+  Say: "Rules score + LLM verdict phishing/high. Under 50ms to all browsers."
+  Backup curl (same result):
+    curl -X POST http://127.0.0.1:8000/api/threats -H "Content-Type: application/json" -d "{\"title\":\"Urgent verify OTP within 2 hours http://evil-login.example\",\"kind\":\"phishing\",\"body\":\"account locked, click link\"}"
+  Open Swagger: http://127.0.0.1:8000/docs -> POST /api/threats -> Try it out.
+
+[1:15-2:15] SUPPORT - "Now the fix, auto-explained."
+  On /support type: "I got an OTP mail asking to verify urgently, is it scam?"
+  Click Ask -> show Steps tab (4 numbered cards), Voice tab (play mp3),
+  Video tab (play mp4 + chapter slides).
+  Say: "Support auto-finds the problem, writes steps, speaks them free
+  with edge-tts, renders video free with moviepy. No quiz - direct guidance."
+
+[2:15-2:45] DEVICES - "Real PCs report in."
+  Open /devices. Run on any PC: python agent/agent.py (needs server URL in
+  agent/config.json). Heartbeat appears, online/offline by 120s rule.
+  Say: "Stdlib-only agent, no pip install on monitored PCs."
+
+[2:45-3:00] CLOSE - "Tests prove it."
+  Run: .\.venv\Scripts\python.exe -m pytest tests -q  -> 3 passed.
+  Say: "Smoke + T2 detection + T3 support. Same code runs local and Render."
+
+IF SOMETHING FAILS (backup lines):
+  - No AI key: "verdict=error by design - set OPENROUTER_API_KEY in .env."
+  - No video: "Step cards below work without moviepy/ffmpeg."
+  - Render cold start: "Free tier sleeps, first load 30s, then fast."

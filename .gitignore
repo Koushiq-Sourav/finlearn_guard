@@ -1,0 +1,10 @@
+# CONTRIBUTION: Keeps secrets, venv, and media cache out of git.
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+data/media/*
+!data/media/.gitkeep
+extra/
+screenshots/
+*.pyc

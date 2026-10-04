@@ -1,0 +1,45 @@
+{% extends "layouts/base.html" %}
+<!-- CONTRIBUTION: Full employee directory with add form. -->
+{% block title %}All Users — FinLearn Guard{% endblock %}
+{% block content %}
+<!-- ============================================================
+  USERS PAGE (/users) - the full employee directory.
+  Same building blocks as the dashboard EMPLOYEES card:
+    #search   = instant table filter (app.js §1)
+    #addPerson = add form, #pName required, #pId auto, .btn-add submits (app.js §5)
+    #empTable = Jinja rows + .badge risk pills (CSS §7)
+============================================================ -->
+<section class="card">
+  <div class="card-head">
+    <h2>All Users</h2>
+    <!-- SEARCH: filters #empTable rows as you type -->
+    <input id="search" type="search" placeholder="Search name, dept, risk…" autocomplete="off">
+  </div>
+  <p class="dim">Everyone whose network / system is under analysis — {{ employees|length }} total.</p>
+  <!-- ADD FORM: same fields as dashboard (name/dept/id/risk) -->
+  <form id="addPerson" class="add-row">
+    <input id="pName" type="text" placeholder="Full name *" required maxlength="60">
+    <input id="pDept" type="text" placeholder="Dept / system (e.g. Finance-PC03)" maxlength="60">
+    <input id="pId" type="text" placeholder="ID (optional, auto)" maxlength="12">
+    <select id="pRisk">
+      <option value="low">low</option>
+      <option value="medium">medium</option>
+      <option value="high">high</option>
+    </select>
+    <button type="submit" class="btn-add">+ Add person</button>
+  </form>
+  <!-- TABLE: server-rendered employee rows -->
+  <table id="empTable">
+    <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Risk</th></tr></thead>
+    <tbody>
+    {% for e in employees %}
+      <tr data-risk="{{ e.risk }}">
+        <td>{{ e.id }}</td><td>{{ e.name }}</td><td>{{ e.dept }}</td>
+        <td><span class="badge {{ e.risk }}">{{ e.risk }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="foot"><a href="/" class="nav-link">← Back to Dashboard</a></p>
+</section>
+{% endblock %}

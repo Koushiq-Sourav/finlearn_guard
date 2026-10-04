@@ -1,0 +1,11 @@
+# CONTRIBUTION: Keeps venv and secrets out of the Docker image.
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+data/media/
+data/*.db
+extra/
+screenshots/
+instructor/
+*.pyc

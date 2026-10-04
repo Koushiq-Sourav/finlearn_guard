@@ -1,0 +1,214 @@
+/* CONTRIBUTION: Every visual style: theme, buttons, feed, inspector, tabs. */
+/* ================================================================
+   FINLEARN GUARD STYLES - section map (rules kept in cascade order)
+   §0  reset + theme tokens + page body
+   §1  BACKGROUND orbs (base.html decor behind everything)
+   §2  TOPBAR - sticky pill bar: brand | nav links | LIVE pill
+   §3  BUTTONS - every button/link style in one place:
+         .nav-link    = gradient pill links (topbar, hero, back links)
+         .btn-support = gradient Support buttons (topbar, hero .big, dashboard)
+         .btn-fire    = red action buttons (Simulate Attack, Diagnose)
+         .btn-add     = green-cyan Add-person submit
+         .tab / .tab.on = support page Steps/Voice/Video switcher
+         .auto        = small checkbox labels (auto-feed, voice, video)
+   §4  DASHBOARD hero + stat counters (.hero .kicker .stats .stat .num .lbl)
+   §5  CARDS - .card white-panel blocks + .card-head title rows
+   §6  DASHBOARD live feed (#graph attacks/min + #feed rows + #perfGraph performance)
+   §7  TABLES - employees/devices tables, #search box, .add-row form, .badge risk pills
+   §8  SUPPORT page - .support-box textarea #q, .answer card, .tabs/.pane,
+       #aSteps cards, #aVoice audio, #aVideo video, .slide chapters
+   §9  GLOBAL widgets - .toast popup, .float-ball shortcut + #fbDot
+   §10 RESPONSIVE - small-screen adjustments
+   §11 INSPECTOR - simulation box: custom test row, clickable feed, 5 steps
+   ================================================================ */
+
+/* ---------- §0: reset + theme tokens + page body ---------- */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0b1020;--card:#141b33;--ink:#eef2ff;--mut:#9aa6c7;--cyan:#22d3ee;--vio:#8b5cf6;--lime:#a3e635;--amber:#fbbf24;--rose:#fb7185}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#1b2450 0%,var(--bg) 55%);color:var(--ink);font-family:"Segoe UI",Inter,Arial,sans-serif;padding:0 16px 40px}
+
+/* ---------- §1: BACKGROUND orbs ---------- */
+/* 3 blurred floating color blobs fixed behind all content (base.html .bg-orbs) */
+.bg-orbs{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bg-orbs span{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;animation:drift 14s ease-in-out infinite alternate}
+.bg-orbs span:nth-child(1){width:340px;height:340px;background:#6d28d9;top:-90px;left:-70px}   /* violet, top-left */
+.bg-orbs span:nth-child(2){width:280px;height:280px;background:#0e7490;bottom:-60px;right:-40px;animation-delay:2s} /* teal, bottom-right */
+.bg-orbs span:nth-child(3){width:180px;height:180px;background:#be123c;top:38%;left:62%;opacity:.22;animation-delay:4s} /* crimson, mid */
+@keyframes drift{to{transform:translate(40px,30px) scale(1.12)}}
+
+/* ---------- §2: TOPBAR ---------- */
+/* sticky pill bar on every page: .brand (left) .nav links (mid) .live-pill (right) */
+.topbar{position:sticky;top:10px;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:1280px;margin:0 auto 4px;padding:12px 16px;background:rgba(11,16,32,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.45);flex-wrap:wrap}
+section{scroll-margin-top:90px}   /* anchor jumps (#live) stop below the sticky bar */
+.brand{font-weight:800;font-size:19px;letter-spacing:.3px}   /* "FinLearn Guard" + shield logo */
+.logo{display:inline-block;vertical-align:-5px}             /* glowing shield (inline SVG) */
+.logo svg{display:block;filter:drop-shadow(0 0 10px var(--cyan))}
+/* LIVE pill: .dot grey while connecting, green blinking when WS live (app.js §3 toggles .on) */
+.live-pill{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);padding:8px 14px;border-radius:999px;font-size:12.5px;letter-spacing:1px}
+.live-pill .dot{width:10px;height:10px;border-radius:50%;background:#64748b;transition:.3s}
+.live-pill.on .dot{background:var(--lime);box-shadow:0 0 12px var(--lime);animation:blink 1.4s infinite}
+.nav{display:flex;gap:10px;align-items:center}   /* row of topbar links */
+
+/* ---------- §3: BUTTONS (all clickables, every page) ---------- */
+/* .nav-link: gradient pill LINKS (topbar Dashboard/Users/Devices, hero "View live analysis", back links) */
+.nav-link{color:#06121f;text-decoration:none;font-size:13.5px;font-weight:800;letter-spacing:.5px;background:linear-gradient(90deg,var(--cyan),var(--vio));padding:9px 20px;border-radius:999px;box-shadow:0 0 16px rgba(34,211,238,.45)}
+.nav-link:hover{filter:brightness(1.1)}
+/* .btn-support: gradient Support BUTTONS (topbar pill, dashboard hero .big, dashboard "All Users") */
+.btn-support{background:linear-gradient(90deg,var(--cyan),var(--vio));color:#06121f;font-weight:800;text-decoration:none;padding:9px 20px;border-radius:999px;font-size:13.5px;letter-spacing:.5px;box-shadow:0 0 16px rgba(34,211,238,.45)}
+.btn-support.big{display:inline-block;padding:12px 28px;font-size:15px}   /* hero's large Support button */
+.hero-btns{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap}  /* hero button row */
+@keyframes blink{50%{opacity:.45}}
+
+/* ---------- §4: DASHBOARD hero + stat counters ---------- */
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;display:grid;gap:18px}  /* page column (base.html <main>) */
+.hero{display:grid;gap:18px;background:linear-gradient(135deg,rgba(139,92,246,.22),rgba(34,211,238,.12));border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:26px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+@media(min-width:900px){.hero{grid-template-columns:1.4fr 1fr;align-items:center}}  /* text left, stats right on desktop */
+.kicker{font-size:11px;letter-spacing:3px;color:var(--cyan);margin-bottom:10px}   /* small eyebrow line */
+.hero h1{font-size:clamp(24px,5vw,36px);line-height:1.15}
+.hero h1 span{background:linear-gradient(90deg,var(--cyan),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}  /* gradient words */
+.sub{color:var(--mut);margin-top:8px}   /* grey subtitle under headline */
+/* stat counters: .num big number (JS count-up / clock), .lbl tiny caption */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px;text-align:center}
+.num{font-size:26px;font-weight:800;color:#fff}
+.lbl{font-size:11px;letter-spacing:2px;color:var(--mut);text-transform:uppercase}
+
+/* ---------- §5: CARDS (content panels on all pages) ---------- */
+.card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}  /* title left, controls right */
+.card h2{font-size:18px}
+
+/* ---------- §6: DASHBOARD live feed ---------- */
+/* .feed-ctl: control row holding .btn-fire + .auto checkboxes */
+.feed-ctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+/* .btn-fire: RED action button - dashboard "Simulate Attack", support "Diagnose & guide me" */
+.btn-fire{background:linear-gradient(180deg,#f43f5e,#be123c);border:none;color:#fff;font-weight:800;letter-spacing:1px;padding:11px 18px;border-radius:12px;cursor:pointer;box-shadow:0 0 18px rgba(244,63,94,.5);transition:.15s}
+.btn-fire:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(244,63,94,.8)}
+/* .auto: tiny checkbox labels - "auto-feed 10s", "voice", "video" */
+.auto{font-size:13px;color:var(--mut);display:flex;gap:6px;align-items:center;cursor:pointer}
+.graphs{display:grid;gap:12px;margin-top:12px}   /* two graph boxes: 1 column mobile… */
+@media(min-width:900px){.graphs{grid-template-columns:1fr 1fr}}  /* …2 columns side-by-side on desktop */
+.graph-box{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px}  /* compact panel per graph */
+#graph,#perfGraph{width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:8px}  /* the two canvases */
+.graph-title{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);margin:6px 0 8px}  /* caption above each graph */
+.perf-total{font-size:14px;font-weight:800;color:#fff;margin:2px 0 4px}  /* grand total under bottom graph */  /* threats/min bars */
+.feed{list-style:none;display:grid;gap:8px;max-height:220px;overflow-y:auto}   /* alert list, scrolls */
+.feed li{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;font-size:13.5px;animation:fadeUp .4s ease}
+/* severity dot colors inside feed rows */
+.feed li b.sev-high{color:var(--rose)} .feed li b.sev-medium{color:var(--amber)} .feed li b.sev-low{color:var(--lime)}
+.feed .dim{color:var(--mut)}
+
+/* ---------- §7: TABLES (employees + devices) + search + add form + risk badges ---------- */
+#search{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:10px 14px;min-width:220px}  /* table filter box */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;color:var(--mut);font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;padding:10px;border-bottom:1px solid rgba(255,255,255,.12)}
+td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:rgba(34,211,238,.07)}
+/* .badge risk pills: .low green (safe/online), .medium amber, .high red blinking */
+.badge{padding:4px 12px;border-radius:999px;font-size:12px;letter-spacing:1px;text-transform:uppercase}
+.badge.low{background:rgba(163,230,53,.15);color:var(--lime);border:1px solid rgba(163,230,53,.4)}
+.badge.medium{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
+.badge.high{background:rgba(251,113,133,.16);color:var(--rose);border:1px solid rgba(251,113,133,.45);animation:blink 1.6s infinite}
+/* .add-row: inline add-person form (inputs + select + .btn-add) */
+.add-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.add-row input,.add-row select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:10px 12px;font-size:13.5px}
+.add-row input:focus,.add-row select:focus{outline:none;border-color:var(--cyan)}
+.add-row select option{background:#141b33}
+/* .btn-add: gradient submit for "+ Add person" */
+.btn-add{background:linear-gradient(90deg,var(--cyan),var(--vio));border:none;color:#06121f;font-weight:800;padding:10px 18px;border-radius:10px;cursor:pointer}
+.btn-add:hover{filter:brightness(1.1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.foot{margin-top:14px;color:var(--mut);font-size:13px}   /* small note under cards */
+
+/* ---------- §9a: TOAST popup (every page) ---------- */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#101736;border:1px solid var(--cyan);color:#dffaff;padding:12px 20px;border-radius:12px;opacity:0;pointer-events:none;transition:.3s;z-index:9;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- §9b: FLOATING support ball (every page) ---------- */
+/* .float-ball: fixed "?" shortcut bottom-right; #fbDot status dot (green when WS live) */
+.float-ball{position:fixed;right:22px;bottom:22px;z-index:8;width:58px;height:58px;min-width:58px;min-height:58px;aspect-ratio:1/1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#06121f;line-height:1;padding:0;margin:0;text-decoration:none;background:linear-gradient(135deg,var(--cyan),var(--vio));box-shadow:0 10px 30px rgba(34,211,238,.5);animation:floaty 3s ease-in-out infinite;transition:transform .15s}
+.float-ball:hover{transform:scale(1.1)}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.fb-dot{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:#64748b;border:2px solid #0b1020}
+.fb-dot.on{background:var(--lime);box-shadow:0 0 10px var(--lime);animation:blink 1.4s infinite}
+
+/* ---------- §8: SUPPORT page ---------- */
+/* .support-box: question area (textarea #q + button/checkbox row) */
+.support-box{display:grid;gap:12px}
+#q{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:12px;padding:12px 14px;font-size:14.5px;font-family:inherit;resize:vertical;width:100%}
+#q:focus{outline:none;border-color:var(--cyan)}
+/* .answer: result card (problem + severity + tabs + panes) */
+.answer{display:grid;gap:12px;margin-top:16px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px}
+.answer h3{font-size:17px}
+/* .tabs row + .tab buttons (.on = active tab) */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:var(--mut);padding:8px 16px;border-radius:999px;cursor:pointer;font-size:13px}
+.tab.on{background:linear-gradient(90deg,rgba(34,211,238,.25),rgba(139,92,246,.25));color:#fff;border-color:var(--cyan)}
+.pane{display:grid;gap:8px}   /* shared tab-content wrapper */
+.pane[hidden],#answer[hidden]{display:none!important}  /* hidden MUST win: author display:grid beats UA [hidden] rule otherwise and empty card + all panes stack */
+/* STEPS pane: numbered fix cards */
+#aSteps{padding-left:22px;display:grid;gap:8px;font-size:14.5px}
+#aSteps li{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;list-style-position:inside}
+/* VOICE pane: full-width audio player */
+#aVoice audio{width:100%}
+/* VIDEO pane: full-width video player + chapter slides */
+#aVideo video{width:100%;border-radius:12px;background:#000}
+.slide{display:flex;gap:10px;align-items:baseline;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;font-size:13.5px}
+.slide b{background:rgba(34,211,238,.2);color:var(--cyan);border-radius:8px;padding:2px 9px;font-size:12px;white-space:nowrap}  /* step number chip */
+.dim{color:var(--mut);font-size:13px}   /* grey helper text anywhere */
+
+/* ---------- §10: RESPONSIVE (small screens) ---------- */
+@media(max-width:640px){.stats{grid-template-columns:1fr 1fr}table{font-size:13.5px}}  /* 3 counters -> 2 per row */
+
+/* ---------- §11: INSPECTOR - attack simulation "how it was caught" box ---------- */
+/* .sim-row: custom attack tester (2 inputs + Test button) */
+.sim-row{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.sim-row input{flex:1;min-width:180px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:10px 12px;font-size:13.5px}
+.sim-row input:focus{outline:none;border-color:var(--cyan)}
+/* clickable feed rows get pointer + hover glow */
+.feed li.clickable{cursor:pointer}
+.feed li.clickable:hover{border-color:var(--cyan);background:rgba(34,211,238,.1)}
+/* severity dot: CSS circle, colored per level (no emoji/symbols) */
+.feed-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:baseline}
+.feed-dot.sev-high{background:#fb7185;box-shadow:0 0 8px #fb7185}
+.feed-dot.sev-medium{background:#fbbf24;box-shadow:0 0 8px #fbbf24}
+.feed-dot.sev-low,.feed-dot.sev-safe{background:#a3e635;box-shadow:0 0 8px #a3e635}
+/* .inspector: 5-step trace panel below the feed */
+.inspector{margin-top:12px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px}
+.insp-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.insp-head h3{font-size:15px}
+.insp-ctl{display:flex;gap:8px;flex-wrap:wrap}
+.insp-ctl .btn-add,.insp-ctl .nav-link{padding:8px 16px;font-size:12.5px}
+#inspTitle{margin-bottom:10px}
+/* .insp-steps: numbered step cards (Step N — name / detail / ms) */
+.insp-steps{list-style:none;display:grid;gap:8px}
+.insp-step{display:grid;gap:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;font-size:13.5px;animation:fadeUp .3s ease}
+.insp-step b{color:var(--cyan)}
+.insp-step span{color:var(--ink)}
+.insp-step em{color:var(--mut);font-style:normal;font-size:12px}
+/* INNOVATIVE BITS: kind chip, body preview with red marks, meter, chips, verdict badges */
+.step-body{display:grid;gap:8px;margin-top:6px}
+.kind-chip{display:inline-block;width:fit-content;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:rgba(139,92,246,.2);border:1px solid var(--vio);color:#d8ccff;border-radius:999px;padding:3px 12px}
+.body-box{white-space:pre-wrap;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.5}
+.body-box mark{background:rgba(244,63,94,.4);color:#fff;border:1px solid var(--rose);border-radius:4px;padding:0 4px}  /* highlighted danger words */
+.meta-line{color:var(--mut);font-size:12px}
+/* danger meter: grey track + animated color fill */
+.score-wrap{height:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:999px;overflow:hidden}
+.score-fill{height:100%;width:0;transition:width .8s ease;border-radius:999px}
+.score-fill.lvl-low{background:linear-gradient(90deg,#65a30d,var(--lime))}
+.score-fill.lvl-medium{background:linear-gradient(90deg,#d97706,var(--amber))}
+.score-fill.lvl-high{background:linear-gradient(90deg,#be123c,var(--rose));box-shadow:0 0 14px rgba(244,63,94,.7)}
+.score-line{font-size:13.5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.sig-chip{font-size:12px;background:rgba(251,191,36,.14);border:1px solid rgba(251,191,36,.45);color:var(--amber);border-radius:999px;padding:3px 11px}
+/* verdict + severity badges */
+.vrow{display:flex;gap:8px;flex-wrap:wrap}
+.vbadge{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;border-radius:999px;padding:4px 14px;border:1px solid}
+.vbadge.phishing{background:rgba(251,113,133,.16);color:var(--rose);border-color:var(--rose)}
+.vbadge.safe{background:rgba(163,230,53,.14);color:var(--lime);border-color:var(--lime)}
+.vbadge.error{background:rgba(251,191,36,.14);color:var(--amber);border-color:var(--amber)}
+.vbadge.high{background:rgba(251,113,133,.16);color:var(--rose);border-color:var(--rose)}
+.vbadge.medium{background:rgba(251,191,36,.14);color:var(--amber);border-color:var(--amber)}
+.vbadge.low{background:rgba(163,230,53,.14);color:var(--lime);border-color:var(--lime)}
+.reason{color:var(--ink);font-style:italic;background:rgba(255,255,255,.04);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;padding:8px 12px}

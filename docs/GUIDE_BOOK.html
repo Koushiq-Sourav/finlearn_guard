@@ -1,0 +1,165 @@
+<!-- CONTRIBUTION: Browser version of the demo guide book. -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>FinLearn Guard - Guide Book</title><style>body{font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 24px;color:#111;line-height:1.55;font-size:14px}h1{font-size:24px;border-bottom:3px solid #0e7490;padding-bottom:8px}h2{font-size:18px;color:#0e7490;margin-top:28px;border-bottom:1px solid #ddd;padding-bottom:4px}code{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:13px}pre{background:#0b1020;color:#eef2ff;padding:14px;border-radius:8px;overflow-x:auto;font-size:12.5px}pre code{background:none;padding:0}ul{padding-left:22px}li{margin:3px 0}@page{margin:18mm}</style></head><body><h1>FinLearn Guard — GUIDE BOOK (for the project show)</h1>
+<p>Read this top to bottom once tonight. In class, jump straight to
+Section 5 (live-edit recipes) when she asks you to change something.</p>
+<hr />
+<h2>1. What this project is (say this in 30 seconds)</h2>
+<p>"FinLearn Guard is one website that detects cyber threats AND teaches
+the fix instantly. A threat comes in, the system detects it with rules
+plus free AI, alerts everyone live, and the Support page explains the
+fix by text, voice, and video. Website, detection, and support are one
+server, one database — that closed loop is the main idea."</p>
+<p>Keywords for marks: FastAPI, Jinja2 templates, REST API, WebSocket
+realtime, MongoDB Atlas, OpenRouter AI, edge-tts
+voice, moviepy video, pytest 3/3, Render deploy.</p>
+<h2>2. How to run it (do this before class)</h2>
+<ol>
+<li>Double-click <code>../live/start_live.bat</code> (a black window opens — KEEP it open).</li>
+<li>Open in browser:</li>
+<li>Dashboard: http://127.0.0.1:8000/</li>
+<li>Support:   http://127.0.0.1:8000/support</li>
+<li>If the page looks old, press Ctrl+F5 once (fresh load).</li>
+</ol>
+<p>3-minute demo path: Dashboard hero → click "Simulate Attack" → feed
+row pops without refresh → CLICK the row → "How it was caught" shows
+5 steps (use "Next step" to walk 1-by-1) → go to /support, ask the OTP
+question → Steps tab, Voice tab (play), Video tab (play) → say
+"pytest 3/3 proves it" (run <code>.venv\Scripts\python -m pytest tests -q</code>).</p>
+<h2>3. Folder map — what each file does (one line each)</h2>
+<pre><code>../live/start_live.bat     double-click to start the server before class
+src\main.py             the server itself (starts everything)
+src\web\routes_web.py   the 4 PAGES: /  /support  /users  /devices
+src\api\routes_api.py   the DATA doors: POST /api/threats, /api/support/ask, /api/employees, GET /api/perf, /api/stats
+src\api\ws.py           the LIVE wire (/ws/alerts) — feed pops without refresh
+src\detection\rules.py  danger-word list + weights → score 0..1 (OFFLINE, always works)
+src\agents\detector.py  rules first, then AI verdict (needs internet + key)
+src\agents\alerter.py   saves the event + broadcasts it live (the 5 pipeline steps)
+src\agents\support.py   support guide writer (problem + steps + voice script)
+src\llm\client.py       talks to the free AI (OpenRouter); error if key missing
+src\llm\prompts\*.txt  instructions given to the AI (edit wording here, NOT in code)
+src\media\voice.py      makes the mp3 (edge-tts, free)
+src\media\video.py      makes the mp4 (moviepy; slide cards if ffmpeg missing)
+src\storage\database.py MongoDB Atlas collections, 3 demo employees seeded
+templates\layouts\base.html   topbar + background, shared by EVERY page
+templates\pages\dashboard.html  hero + live feed + inspector + graphs + employees
+templates\pages\support.html    ask box + Steps/Voice/Video answer
+templates\pages\users.html      all-users table page
+templates\pages\devices.html    device agent status page
+static\css\style.css    ALL looks: colors (§0 tokens), buttons (§3), inspector (§11)
+static\js\app.js        ALL dashboard behavior: feed, inspector, graphs, auto-feed
+tests\                  3 tests: smoke + detection + support (pytest proves it works)
+.env                    secrets (AI key + database URL) — NEVER show on screen
+../instructor/             DEMO_SCRIPT.txt + ARCHITECTURE.txt + API_TABLE.txt + REPORT_POINTS.txt
+</code></pre>
+<h2>4. GOLDEN RULE — refresh vs restart (memorize this)</h2>
+<ul>
+<li>HTML / CSS / JS (<code>templates\</code>, <code>static\</code>) → just SAVE the file and
+  REFRESH the browser (Ctrl+F5). Server keeps running. No restart.</li>
+<li>Python (<code>src\*.py</code>) → SAVE, then RESTART the server: close the black
+  window (or Ctrl+C inside it), double-click <code>start_live.bat</code> again,
+  wait 5 seconds, refresh. Python code loads only at startup.</li>
+<li><code>.env</code> secrets → SAVE + RESTART (same as Python).</li>
+<li>If she asks "change X" and X is TEXT, COLOR, or BUTTON → it is always
+  HTML/CSS → save + refresh, done in 10 seconds. Smile.</li>
+</ul>
+<h2>5. LIVE-EDIT PLAYBOOK — when she says "change it now"</h2>
+<p>Open the file in VS Code, find the text, type, save, refresh browser.
+Each recipe below gives: FILE → FIND → TYPE → SEE.</p>
+<h3>E1. Change the big headline</h3>
+<p>FILE: <code>templates\pages\dashboard.html</code> → FIND: <code>Threat in. Lesson out.</code>
+→ TYPE your words → SEE: refresh <code>/</code>. (Same file: <code>.sub</code> line = the
+grey subtitle under it.)</p>
+<h3>E2. Change any button text</h3>
+<p>FILE: same <code>dashboard.html</code> → FIND: <code>Simulate Attack</code> (or <code>Support</code>,
+<code>Test this</code>, <code>Next step</code>) → TYPE new words, keep the quotes/tags
+around it → SEE: refresh. Support page buttons live in
+<code>templates\pages\support.html</code> (<code>Diagnose &amp; guide me</code>, <code>Steps</code>,
+<code>Voice</code>, <code>Video</code>).</p>
+<h3>E3. Change colors / theme</h3>
+<p>FILE: <code>static\css\style.css</code> line 26 (<code>:root{...}</code>) → the tokens:
+<code>--cyan</code> (main bright), <code>--vio</code> (gradient end), <code>--rose</code> (red/danger),
+<code>--amber</code> (medium), <code>--lime</code> (safe/green), <code>--bg</code> (page background).
+→ TYPE a new hex, e.g. <code>--cyan:#00ff88</code> → SEE: refresh. Whole site
+recolors at once — big applause, 10 seconds.</p>
+<h3>E4. Change the topbar (site name / links)</h3>
+<p>FILE: <code>templates\layouts\base.html</code> → FIND: <code>FinLearn Guard</code> (brand) or
+the <code>&lt;nav&gt;</code> links → TYPE → SEE: refresh. Affects EVERY page at once.</p>
+<h3>E5. Add a new block on the dashboard</h3>
+<p>FILE: <code>templates\pages\dashboard.html</code> → copy any whole <code>&lt;section
+class="card"&gt;...&lt;/section&gt;</code> block, paste below it, change its <code>&lt;h2&gt;</code>
+title and inner text → SEE: refresh. New panel appears. (Styling comes
+free from <code>.card</code>.)</p>
+<h3>E6. Change the Support page question hint or tabs</h3>
+<p>FILE: <code>templates\pages\support.html</code> → FIND: <code>placeholder="e.g. I got
+a mail...</code> (hint text) or the tab buttons → TYPE → SEE: refresh.</p>
+<h3>E7. Add YOUR OWN demo attack sample</h3>
+<p>FILE: <code>static\js\app.js</code> → FIND: <code>const SAMPLES = [</code> → add one line
+inside, e.g. <code>{ title: 'Free gift claim now', body: 'Click
+http://gift.example with your OTP.' },</code> → SEE: refresh, click
+"Simulate Attack" until yours fires. No restart (it is JS).</p>
+<h3>E8. Change danger words or weights (detection logic)</h3>
+<p>FILE: <code>src\detection\rules.py</code> → each line = <code>(word-pattern, weight)</code>.
+Raise a weight (e.g. <code>0.15</code> → <code>0.30</code>) or add a line like
+<code>(r"bonus|reward", 0.20),</code> → SAVE + RESTART server (Section 4) → test
+with "Test this". If she asks "how does detection work", point at this
+file: words match → points add up → score 0..1 → AI confirms.
+Safety rule in <code>src\agents\detector.py</code> line 50: score ≥ 0.6 can never
+be called "safe" even if the AI says so.</p>
+<h3>E9. Employees (she asks "add a person / change names")</h3>
+<p>EASY WAY (live, no code): use the "+ Add person" form on the dashboard
+— it saves instantly. CODE WAY: <code>src\storage\database.py</code> lines 64-66
+(seed names) → but seeds apply ONLY to an empty database, so prefer the
+form in class.</p>
+<h3>E10. Change what the AI is told (prompts, no code)</h3>
+<p>FILE: <code>src\llm\prompts\detector.txt</code> or <code>support.txt</code> → plain English
+instructions → SAVE + RESTART → next answer follows the new wording.
+Good answer if she asks "where is the AI logic": "the prompt files".</p>
+<h3>E11. Add a whole new page (only if she pushes)</h3>
+<ol>
+<li><code>templates\pages\</code> → copy <code>users.html</code> to <code>newpage.html</code>, change text.</li>
+<li><code>src\web\routes_web.py</code> → copy a 3-line <code>@router.get(...)</code> block,
+   change path + filename.</li>
+<li><code>templates\layouts\base.html</code> → add <code>&lt;a href="/newpage"&gt;</code> in <code>&lt;nav&gt;</code>.</li>
+<li>SAVE + RESTART → open <code>/newpage</code>. Four steps, say them out loud.</li>
+</ol>
+<h2>6. If something breaks in class (backup lines)</h2>
+<ul>
+<li>Port busy / bat closes instantly → another server holds :8000. In
+  PowerShell: find the listener PID on port 8000 and Stop-Process it,
+  then double-click the bat again.</li>
+<li>Support says "error" / verdict=error → AI key missing or no net. Say:
+  "verdict=error by design — it refuses to guess without the key."
+  Rules score + signals still show. Set OPENROUTER_API_KEY in <code>.env</code> +
+  restart when net is back.</li>
+<li>Video shows "needs moviepy" → audio + steps still work. Say: "step
+  cards below work without ffmpeg." (moviepy IS installed here, so this
+  should not happen on this PC.)</li>
+<li>Feed looks frozen → check the topbar pill: green LIVE = connected,
+  "reconnecting…" = server window closed → reopen the bat.</li>
+<li>Page shows OLD code after your edit → Ctrl+F5 (hard refresh). Server
+  sends no-store, but browsers cache JS/CSS filenames — that is why we
+  bump <code>?v=</code> in <code>base.html</code> after static edits.</li>
+</ul>
+<h2>7. Questions she may ask (one-line answers)</h2>
+<ul>
+<li>"How is this realtime?" → POST saves → WebSocket <code>/ws/alerts</code> pushes
+  to all open browsers instantly, no refresh (<code>src\api\ws.py</code>).</li>
+<li>"Where does the AI run?" → OpenRouter cloud, free mistral model, one
+  gateway file <code>src\llm\client.py</code>; offline rules score first.</li>
+<li>"Where is data stored?" → MongoDB Atlas cloud (<code>src\storage\database.py</code>).</li>
+<li>"What is novel here?" → Closed loop: threat → detect → live alert →
+  guided fix (text+voice+video) → saved event → risk visible. One JSON,
+  one DB, one server.</li>
+<li>"How do you know it works?" → <code>pytest tests -q</code> → 3 passed; plus live
+  <code>/health</code>, Swagger <code>/docs</code>, curl lines in <code>../instructor/API_TABLE.txt</code>.</li>
+<li>"Limits?" → Prototype realtime = REST+WebSocket (no raw packet
+  sniffing); free Render sleeps ~30s cold start; LLM needs key + net;
+  video = slide guide, not a presenter avatar.</li>
+</ul>
+<h2>8. Tonight checklist (before sleep)</h2>
+<p>[ ] Double-click bat → both links 200 → one Simulate → one support ask
+[ ] Read Section 5 recipes once; try E1 + E3 yourself (then undo)
+[ ] Charge laptop; hotspot ready (LLM + Atlas need internet)
+[ ] Keep this black terminal OPEN or remember: bat → 5 sec → refresh
+[ ] <code>.env</code> stays on THIS pc; never open it on the projector</p>
+<p>Good luck tomorrow. You built a full closed-loop system — show it.</p></body></html>

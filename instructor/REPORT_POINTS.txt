@@ -1,0 +1,37 @@
+CONTRIBUTION: Problem/solution/novelty lines written for marks.
+
+FINLEARN GUARD - REPORT POINTS (what to write/say for marks)
+=============================================================
+
+1. PROBLEM: Finance staff fall for phishing/OTP scams; training is
+   separate from detection. No closed loop: alert -> learn -> measure.
+
+2. SOLUTION: One website that detects the threat AND teaches the fix
+   instantly (text + voice + video), with live feed to everyone.
+
+3. CLOSED LOOP (novelty line for report):
+   threat in -> detect (rules+LLM) -> alert (WebSocket) -> support guide
+   (steps+audio+video) -> saved event -> risk visible. One JSON shape,
+   one DB, one server.
+
+4. TECH (course keywords, all true):
+   FastAPI + Jinja2 SSR + REST API + WebSocket realtime + MongoDB/Atlas
+   + OpenRouter LLM gateway + edge-tts + moviepy +
+   stdlib endpoint agent + pytest (3/3) + Render/Docker deploy.
+
+5. WHAT I BUILT vs USED:
+   Built: detector, support agent, alerter, rules, gateway wiring,
+   voice/video renderers, MongoDB layer, agent, UI tabs, WS hub.
+   Used (free): OpenRouter mistral model, edge-tts voices, moviepy,
+   FastAPI/uvicorn, Mongo Atlas, Render.
+
+6. TESTING: pytest tests/test_smoke.py + test_t2.py + test_t3_support.py
+   (3 passed). Live: /health, Swagger /docs, curl examples in API_TABLE.
+
+7. LIMITS (honest, instructors respect this):
+   Prototype realtime = REST + WebSocket (no raw packet sniff).
+   Free Render sleeps (30s cold start). LLM needs key + net.
+   Video is slide-guide, not avatar presenter.
+
+8. FUTURE: True packet agent, risk auto-update from quiz/support,
+   admin analytics, multi-language voice.

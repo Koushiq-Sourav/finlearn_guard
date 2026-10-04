@@ -1,0 +1,52 @@
+CONTRIBUTION: Closed-loop diagram, module map, and why-design answers.
+
+FINLEARN GUARD - ARCHITECTURE (show this to instructor)
+=====================================================
+
+ONE-LINE: Finance learning + threat-guard in one FastAPI website.
+Threat comes in -> AI detects -> everyone sees it live -> support
+explains the fix by text + voice + video.
+
+FLOW (closed loop):
+  [User / Mail / Agent PC] --POST /api/threats--> [Detector]
+      Detector = rules.py (offline score 0..1, 8 phishing patterns)
+               + OpenRouter LLM (mistralai/ministral-8b-2512, prompts/detector.txt)
+      -> [Alerter] saves to DB + WebSocket broadcast /ws/alerts
+      -> [Dashboard /] live feed + toast + per-minute graph update (<50ms)
+  [User asks "my PC slow / OTP mail?"] --POST /api/support/ask--> [Support]
+      Support = rules + detector signals + OpenRouter (prompts/support.txt)
+              -> problem + severity + 4 steps + voice script
+      -> edge-tts voice mp3 (/media/voice-*.mp3, free, 2-4s)
+      -> moviepy slide video (/media/guide-*.mp4, 640x360, 5 steps max)
+      -> saved as kind=support event + broadcast, shown in tabbed UI
+  [Endpoint PCs] agent/agent.py --heartbeat--> /api/devices/* (seen on /devices)
+
+MODULE MAP (each file, one job):
+  src/main.py              App wiring: routers + /static + /media + lifespan seed
+  src/api/routes_api.py    REST: /health, /api/employees, /api/threats,
+                           /api/support/ask, /api/devices/*, /api/stats
+  src/api/ws.py            WebSocket /ws/alerts broadcast hub
+  src/web/routes_web.py    Pages: / (dashboard), /support, /users, /devices
+  src/agents/detector.py   Rules + LLM verdict (phishing/safe/error, severity)
+  src/agents/alerter.py    Save threat + broadcast + risk bump
+  src/agents/support.py    Diagnose question -> guide (no quiz, Tier 3 support)
+  src/detection/rules.py   8 regex patterns, score 0..1 + signals
+  src/llm/client.py        ONE OpenRouter gateway (all agents, no dummy fallback)
+  src/llm/prompts/         detector.txt + support.txt (different system prompts)
+  src/media/voice.py       edge-tts cache-by-hash mp3
+  src/media/video.py       moviepy slide mp4, else slides + clear error
+  src/storage/database.py  Mongo Atlas collections, same API
+  agent/agent.py           Stdlib-only PC agent: register + netstat + heartbeat
+  config/settings.yaml     Name + port + seed (E001 Koushiq, E002 Tumpa, E003 Rahim)
+  static/ + templates/     Navy premium UI (Inter, glass hero, cards, tabs)
+
+DATA:
+  Mongo Atlas live.
+  Collections: employees / threat_events / devices.
+  Media regenerates; nothing secret in repo (.env never committed).
+
+WHY THIS DESIGN (answer "why" questions):
+  - FastAPI: course needs REST API + Python-native AI libs (edge-tts/moviepy).
+  - One LLM gateway: same key/model, different prompts = cheap + consistent.
+  - No dummy fallbacks: missing key returns verdict=error (honest, debuggable).
+  - WebSocket: true realtime without refresh (instructor sees alert pop live).

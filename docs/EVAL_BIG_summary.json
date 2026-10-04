@@ -1,0 +1,23 @@
+{
+  "csv": "data/eval/labels2000_v2.csv",
+  "n_test": 399,
+  "rules": {
+    "acc": 0.957,
+    "f1": 0.975,
+    "fp": 0,
+    "fn": 17
+  },
+  "ml": {
+    "kind_acc": 1.0,
+    "per_kind": {
+      "phishing": "57/57",
+      "safe": "57/57",
+      "otp": "57/57",
+      "sqli": "57/57",
+      "xss": "57/57",
+      "bec": "57/57",
+      "malware": "57/57"
+    }
+  },
+  "note": "synthetic-v1 disclosed; rules binary; ml kind-exact centroid; LLM excluded (cost)"
+}

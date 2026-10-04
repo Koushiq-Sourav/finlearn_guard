@@ -1,0 +1,16 @@
+# CONTRIBUTION: Root copy so Render auto-detects the web service.
+services:
+  - type: web
+    name: finlearn-guard
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: mistralai/ministral-8b-2512
+      - key: MONGO_URL
+        sync: false
+      - key: MONGO_DB
+        value: finlearn_guard
