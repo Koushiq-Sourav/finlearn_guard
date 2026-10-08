@@ -8,3 +8,8 @@ data/media/*
 extra/
 screenshots/
 *.pyc
+# REAL data: bulky Fraud-R1 upstream clone (re-fetched by data/real/download_real.py).
+# Built labels_real.csv + scripts ARE committed; the clone is not.
+data/real/fraud_r1/
+# One-off local backup artifact (rebuilt THESIS source is committed instead).
+docs/THESIS_backup_20261008.html

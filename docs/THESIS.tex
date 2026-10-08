@@ -1,0 +1,292 @@
+
+% CONTRIBUTION: FinLearn Guard Thesis Rev.2 - Overleaf ready (pdfLaTeX, no external images needed).
+% Compile: Overleaf -> New Project -> Upload THESIS.tex -> Recompile. Figures are boxed placeholders + 2 optional PNGs.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage{graphicx,amsmath,booktabs,hyperref,url,array,longtable}
+\usepackage[utf8]{inputenc}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\title{FinLearn Guard: A Closed-Loop Web Platform for Cyber Threat Detection and Guided Response}
+\author{Student Name: \_\_\_\_\_\_\_\_\_\_ \quad ID: \_\_\_\_\_\_\_\_\_\_ \\ Department of Computer Science \& Engineering \\ Supervisor: Madam: \_\_\_\_\_\_\_\_\_\_ \\ September 2026 (Rev.2 Oct 2026 -- supervisor correction)}
+\date{\today}
+\begin{document}
+\maketitle
+\section*{Declaration}
+I hereby declare that this thesis/project report titled ``FinLearn Guard: A Closed-Loop Web Platform for Cyber Threat Detection and Guided Response'' is the result of my own work, carried out under the supervision of my supervisor. All sources are acknowledged in References. No part has been submitted elsewhere.
+\section*{Acknowledgements}
+I thank my supervisor for continuous guidance and for demanding clarity on agents, model, and orchestration (Rev.2), the authors of the open literature, and providers of free tools (FastAPI, OpenRouter, edge-tts, moviepy, MongoDB Atlas free tier).
+\begin{abstract}
+Phishing and OTP fraud target office users while detection and training live apart \cite{Heiding24,Koide24,Desolda24,Nair25}.
+This thesis presents FinLearn Guard, one FastAPI server closing the loop: offline rules + frozen LLM verdict \cite{Koide24,Desolda24}, WebSocket live push, Support steps + voice mp3 + video mp4, plus a PC endpoint agent.
+A phishing sample judges phishing/high in $\sim$1s (rules 0.0ms); voice+video renders in $\sim$6s; pytest 3/3 passes.
+122 works surveyed. Gap: detectors rarely teach \cite{Koide24,Desolda24,SAGE26}, trainers rarely detect live \cite{SENSAI25,SYNAPSE26}, few ship one runnable system \cite{FraudR125,FinAgentBench25}.
+Each chapter is briefed What-Why-How with running example \texttt{Urgent: verify your account http://bit.ly/otp-login}.
+Chapter 4 answers: Where is agent? (Sec 4.2, four agents + paths), What is model? (Sec 4.3, rules + frozen LLM, no training), Orchestration? (Sec 4.4, REST+WS sequence + timings + failures).
+\end{abstract}
+\noindent\textbf{Keywords:} phishing detection; agentic AI; personalized tutoring; LLM; WebSocket; cybersecurity education.
+\tableofcontents
+\listoffigures
+\listoftables
+\section{Introduction (briefed)}
+\subsection{Background}
+Electronic communication is the top fraud surface: forged logins, OTP pressure, fake invoices. Billions of spams/day \cite{Nair25} evade signatures by paraphrase, motivating semantic defences. Example: \texttt{``suspended in 2h, verify at http://bit.ly/otp-login with OTP''} needs urgency + credential + short-link read together.
+\subsection{Motivation}
+Detectors \cite{Heiding24,Koide24,Desolda24,UserRAG26} and tutors \cite{SchoniCHI25,Sriganthan25,TrainShield25} advance separately; joined deployable loops are rare \cite{SAGE26,FraudR125}. Personalised in-workflow lessons beat slides \cite{SchoniCHI25,TrainShield25,Pardos24}; nudges beat long content \cite{Lain24}.
+\subsection{Problem Statement}
+How can a small org detect phishing-like threats and teach the fix in one maintainable free-tier system? (a) 7-class detection in $\sim$1s CPU-only; (b) push to all screens; (c) steps+voice+video from same verdict; (d) tables not claims.
+\subsection{Objectives}
+O1 one server (pages+API+WS+media). O2 hybrid detect (rules + LLM + safety-lock score$\ge$0.6 never safe \cite{Hasan25,StruQ24}). O3 live alert. O4 3-format guide, self-actions only. O5 stdlib endpoint agent. O6 honest errors (missing key $\rightarrow$ verdict=error).
+\subsection{Scope}
+In: 7 text classes (phishing, otp, bec, sqli, xss, malware, safe), English, single server, free tiers. Out: packet sniffing \cite{Rigaki24,Castro25}, multilingual, longitudinal study (protocol only).
+\subsection{Contributions}
+C1 closed loop (one JSON/DB/server). C2 safety-locked hybrid (no training). C3 four-agent orchestration + 5-step trace. C4 honest evals (70 live + 1995 harness + N=30 protocol).
+\subsection{Organization}
+Ch2 122-work survey + gap; Ch3 design; Ch4 agents/model/orchestration; Ch5 build; Ch6 measure; Ch7 conclude.
+\section{Literature Review (122 works)}
+Method: six pillars A agentic fraud/finance, B LLM phishing, C tutoring, D benchmarks/safety, E orchestration/systems, F web/engineering. Key points only; full list in References.
+\subsection{Pillar A -- Agentic fraud \& finance}
+SAGE 3-agent +40.86\% F1 \cite{SAGE26}; risk-first teams \cite{RiskFirst26}; AMLNet gen+detect \cite{AMLNet25}; AuditAgent chains \cite{AuditAgent25}; AgenticCyber 96.2\% 420ms \cite{AgenticCyber25}; MALCDF 4 SOC agents \cite{MALCDF25}; Hmimou email+log+IP+RAG \cite{Hmimou25}; CyLens 271k reports \cite{CyLens25}; TradingAgents/FinCon/HedgeAgents/FinRobot debate+hierarchy+schedule \cite{TradingAgents24,FinCon24,HedgeAgents25,FinRobot24}; realtime payments triage \cite{IJCISIM26}; tool hacking \cite{FangHack24,FangExploit24}; PentestGPT split \cite{PentestGPT24}; local 7B \cite{Rigaki24}; IDS-Agent \cite{IDSAgent24}; explainer \cite{Houssel24}; CTI response \cite{Tellache25}; CAGE-4 teams \cite{Castro25}; SOC $<$10min \cite{Saju26}; honeypot \cite{Honeypot24}; SAGA registry \cite{SAGA25}; AegisLLM reflection \cite{Aegis25}; AIR DSL \cite{AIR26}; CLASP \$3.18/1k \cite{CLASP25}; Fraud-R1 role-play \cite{FraudR125}; finance research agents \cite{Park24,FinAgent24,FinCon24,TradingAgents24,HedgeAgents25,FinRobot24}; collusion warning \cite{Collude25}; payment MDP \cite{Qu25}; AutoGen control \cite{AutoGen24}. None ships detect+push+teach in one student server.
+\subsection{Pillar B -- LLM phishing detection}
+LLMs create and catch \cite{Heiding24,HeidingIntent24}; ChatSpamDetector 99.70\% + reasons \cite{Koide24}; APOLLO 97.4\% (99\% +URL) trusted warnings \cite{Desolda24}; meta $\sim$99\% cheaper \cite{Nair25}; RF 99.47\% brittle \cite{Algo25}; RAG -66.7\% FP 0.9703 \cite{UserRAG26}; memory agents \cite{MemoPhish26}; injection 10-40\% breaks \cite{Hasan25}; screenshot/temp-0 recipe \cite{Ji25}; cost recall +40\% \cite{CLASP25}; tabular honesty XGBoost 98.48\% beats LLM \cite{FinFraud25}; tabular-to-text RAG \cite{FinFRE25}; debate \cite{PhishDebate25}; rephrase evasion \cite{NextGenPhish24}; brand checks \cite{MMPhish24}; brand KB \cite{KnowPhish24}; single-iteration \cite{PhishAgent25}; PhishOracle \cite{PhishOracle24}; MobileBERT client \cite{PhishLang24}; one-shot URL 0.92 \cite{OneShotURL24}; Korean $<$5B \cite{KorSmish24}; SmishX 98.8\% N=175 \cite{SmishX25}; Mixtral SMS 98.6\% \cite{SpaLLM25}; on-device 3.46MB \cite{COPS24}; campaign cluster \cite{SmishCheck25}; persuasion +5.3\% \cite{Persuade24}; Moz money \cite{MozSmish25}; BEC review 2/30 human-loop \cite{BECReview25}; StruQ channels \cite{StruQ24}; hierarchy \cite{Hierarchy24}; prompt-vs-tune \cite{PromptVsTune24}. Verdict: frozen LLM + rules + override.
+\subsection{Pillar C -- Tutoring}
+SENSAI \cite{SENSAI25}; SYNAPSE loop \cite{SYNAPSE26}; flaw-injection N=71 \cite{Frazier26}; curricula \cite{CurricuLLM26}; mentor \cite{CyberMentor25}; KG QA \cite{CyberQ24}; hints=human N=274 \cite{Pardos24}; copilots +4pp 1800 students \cite{TutorCopilot24}; 2x faster \cite{Kestin25}; 2-year bottleneck \cite{Khanmigo25}; in-field RCT \cite{Vanzo25}; steps$>$answers \cite{Blasco24}; role-play N=105 \cite{ChenCHI24}; nudges \cite{Lain24}; matching N=342 \cite{SchoniCHI25}; landing pages \cite{GrecoCEUR24}; codebook \cite{Codebook24}; gains N=480 \cite{Greco25}. Missing: live detection feed. We add it.
+\subsection{Pillar D -- Benchmarks/safety/human methods}
+Fraud-R1 8564 \cite{FraudR125}; FraudBench 28 \cite{FraudBench25}; FinSafety \cite{FinSafety26}; XFin 4235 \cite{XFin25}; FinBen 42/24 \cite{FinBen24}; AgentBench 537 SEC o3 46.8\% \cite{FinAgentBench25}; InvestorBench \cite{Investor25}; FinQA +15\% \cite{FinQA24}; multi-turn \cite{FraudRobust25}; page agent \cite{PageAgent25}; Cybench 40 CTF \cite{Cybench25}; SecEval2/3 \cite{SecEval225,SecEval325}; AgentHarm 110 \cite{AgentHarm25}; HarmBench 510 \cite{HarmBench24}; SWE-bench \cite{SWEbench24}; AgentBench \cite{AgentBench24}; SWE-agent \cite{SWEagent24}. Our Eval-A/B/B-N30 follow at student scale.
+\subsection{Pillars E-F -- Orchestration + engineering}
+Conversable control \cite{AutoGen24}, registry \cite{SAGA25}, reflection \cite{Aegis25}, DSL \cite{AIR26}. Boring stack: FastAPI/Uvicorn/Jinja2/WS \cite{FastAPI24}, Atlas \cite{Mongo24}, edge-tts \cite{EdgeTTS24}, moviepy \cite{Moviepy24}, httpx \cite{HTTPX24}, pytest \cite{Pytest24}, Docker/Render \cite{Docker24}, OWASP/NIST \cite{OWASP24,NIST24}, stdlib netstat \cite{PyStd24}, RF/XGBoost/BERT \cite{Algo25,FinFraud25,BERT24}, t-test/SUS \cite{EvalMethod24}.
+\subsection{Gap matrix}
+\begin{table}[h]\centering\caption{Gap matrix (representative).}\label{tab:gap}\begin{tabular}{@{}lcccc@{}}\toprule System & Detect & Teach & Live & One system\\\midrule ChatSpamDetector \cite{Koide24} & yes & no & no & tool\\
+APOLLO \cite{Desolda24} & yes & no & no & proto.\\
+SAGE \cite{SAGE26} & yes & no & no & classifier\\
+MALCDF \cite{MALCDF25} & yes & no & part & SOC\\
+CLASP \cite{CLASP25} & yes & part & no & pipe\\
+SENSAI \cite{SENSAI25} & no & yes & no & study\\
+SYNAPSE \cite{SYNAPSE26} & lab & yes & no & course\\
+TrainShield \cite{TrainShield25} & yes & yes & ext & ext\\
+Fraud-R1 \cite{FraudR125} & eval & no & no & bench\\
+\textbf{Ours} & \textbf{yes} & \textbf{yes T/V/V} & \textbf{yes WS} & \textbf{yes 1-srv}\\\bottomrule\end{tabular}\end{table}
+Gap: detectors rarely teach, trainers rarely detect live, benchmarks rarely ship systems, realtime teams rarely target clerks.
+
+\section{Methodology and System Design}
+\subsection{Requirements}
+\begin{table}[h]\centering\caption{Requirements (what + why).}\begin{tabular}{@{}lp{9cm}l@{}}\toprule ID & Requirement & Type\\\midrule FR1 & Report threat (form/sim/agent/REST), one door for audit & F\\
+FR2 & Rules + LLM (instant + semantic \cite{Nair25,Algo25}) & F\\
+FR3 & Push to all browsers (seconds, no reload) & F\\
+FR4 & 5-step trace (evidence \cite{Koide24,Desolda24}) & F\\
+FR5 & Steps+voice+video (moment of risk \cite{SchoniCHI25,TrainShield25}) & F\\
+FR6 & Employees + device heartbeats (risk attaches) & F\\
+NFR1 & $\sim$2s detect; no-store pages & NF\\
+NFR2 & Free-tier; no secrets in git; honest errors & NF\\\bottomrule\end{tabular}\end{table}
+\subsection{Use Case}
+Staff report/ask/view; Admin manages; Endpoint Agent heartbeats/bursts; AI Service reasons. Separated so each is replaceable \cite{AutoGen24}.
+\begin{figure}[h]\centering\fbox{\parbox{0.9\linewidth}{\centering Use Case diagram: Staff -- Detect/Learn; Admin -- Manage; Agent -- Sense; AI -- Reason. (See THESIS.html Fig.1 for SVG.)}}\caption{Use Case.}\end{figure}
+\subsection{DFDs}
+L0: one system, three externals, one DB. L1: five processes over DB + media files (media out of DB, hash names).
+\begin{figure}[h]\centering\fbox{\parbox{0.9\linewidth}{\centering DFD L0 context + DFD L1 five processes. (SVG Figs.2-3 in HTML.)}}\caption{DFDs.}\end{figure}
+\subsection{Architecture}
+One FastAPI mounts pages/APIs/static/media/WS. Three server agents + one endpoint agent share one DB. LLM external via one gateway (swap by .env).
+\begin{figure}[h]\centering\fbox{\parbox{0.9\linewidth}{\centering Browser -- FastAPI (Detector/Alerter/Support) -- OpenRouter LLM; DB Atlas; /media mp3/mp4; Endpoint agent via REST/heartbeat.}}\caption{System architecture.}\end{figure}
+\subsection{Data design}
+\texttt{employees(id,name,risk)}, \texttt{threat\_events(id,title,kind,severity,ts)}, \texttt{devices(id,ip,conns,last\_seen)}. One schema runs SQLite local + Atlas cloud.
+\subsection{Closed loop -- worked example}
+Input \texttt{verify account + suspended 2h + http://bit.ly/otp-login + OTP}: rules $0.35+0.30+0.20+0.20=1.0$; LLM \texttt{\{otp,phishing,high\}}; lock holds; alerter saves + bumps high + WS; inspector 5 steps; Support OTP 4 steps + mp3/mp4. Saved event feeds graphs/risk.
+\section{Agents, Model, Orchestration (supervisor answers)}
+\subsection{Overview}
+Agent = senses/decides/acts \cite{FangHack24,Castro25,AutoGen24}. Four small agents (2 decide, 1 persist/notify, 1 sense) via typed dicts + REST + WS, no globals \cite{AutoGen24,SAGA25,Aegis25}.
+\subsection{Where is the agent}
+\begin{table}[h]\centering\caption{Agent roster.}\begin{tabular}{@{}llll@{}}\toprule Agent & File & Acts & Output\\\midrule A1 Detector & \texttt{agents/detector.py} & rules$\rightarrow$LLM$\rightarrow$locks & verdict/severity/kind/ms\\
+A2 Alerter & \texttt{agents/alerter.py + api/ws.py} & save/risk/WS/5-trace & event+pipeline+total\_ms\\
+A3 Support & \texttt{agents/support.py + media/} & LLM guide$\rightarrow$scrub$\rightarrow$mp3/mp4 & steps/urls\\
+A4 Endpoint & \texttt{agent/agent.py} stdlib & heartbeat 30s; burst $\rightarrow$ POST & register/beat/threat\\\bottomrule\end{tabular}\end{table}
+Missing key $\rightarrow$ verdict=error + key URL, never fake safe.
+\subsection{What is the model}
+No trained net. Hybrid: (i) 14-row regex scorer offline 0.0ms, (ii) frozen LLM via OpenRouter default \texttt{mistralai/ministral-8b-2512}, (iii) two locks. Eval-Big centroid 1.0 is synthetic harness, disclosed overfit.
+\begin{table}[h]\centering\caption{Model spec.}\begin{tabular}{@{}llp{7cm}@{}} \toprule Part & Artifact & Role\\\midrule M1 Rules & \texttt{detection/rules.py} & 14 rows 0.15--0.40, sum cap 1.0\\
+M2 Gateway & \texttt{llm/client.py} & one POST, JSON between first \{ last \}, 60s\\
+M3 Det prompt & \texttt{prompts/detector.txt} & 7-kind JSON, sqli/xss/mal always high\\
+M4 Sup prompt & \texttt{prompts/support.txt} & 4 steps + 60w voice, self-only\\
+M5 Lock & score$\ge$0.6 never safe & anti-injection floor \cite{Hasan25,StruQ24}\\
+M6 Stabilizer & mild 0.15--0.59 $\rightarrow$ medium; high needs proof & anti-flicker\\\bottomrule\end{tabular}\end{table}
+\begin{table}[h]\centering\caption{Rules (14 rows).}\begin{tabular}{@{}llcl@{}}\toprule \# & Pattern & W & Kind\\\midrule 1 & verify+suspend & 0.35 & phish\\ 2 & password/otp/pin & 0.30 & otp\\ 3 & urgent/act-now & 0.20 & press.\\ 4 & http/click-link & 0.20 & link\\ 5 & invoice/wire & 0.15 & bec\\ 6 & prize/won & 0.30 & phish\\ 7 & ceo/confidential & 0.25 & bec\\ 8 & gift/offer & 0.15 & phish\\ 9 & gift-card+code & 0.30 & bec\\ 10 & callback/whatsapp-otp & 0.25 & otp\\ 11 & malware/.exe/bitcoin & 0.40 & mal\\ 12 & qr/bit.ly/apk & 0.20 & mal\\ 13 & OR=/UNION/DROP/1=1 & 0.40 & sqli\\ 14 & script/onerror/img/alert & 0.40 & xss\\\bottomrule\end{tabular}\end{table}
+Example hits rows 1+2+3+4 = 1.0 capped, signals verify/otp/urgent/http.
+\subsection{Orchestration}
+Routes orchestrate: \texttt{POST /api/threats $\rightarrow$ handle\_threat $\rightarrow$ detect $\rightarrow$ save $\rightarrow$ risk $\rightarrow$ broadcast $\rightarrow$ pipeline}; \texttt{POST /api/support/ask $\rightarrow$ diagnose $\rightarrow$ screen+detect+LLM $\rightarrow$ scrub $\rightarrow$ mp3/mp4 $\rightarrow$ save kind=support}. Per-stage ms shown.
+\begin{table}[h]\centering\caption{Contracts.}\begin{tabular}{@{}lp{9cm}@{}} \toprule Contract & Shape\\\midrule POST /api/threats & \{title,kind,body,employee\} $\rightarrow$ \{event,verdict,severity,pipeline[5],total\_ms\}\\
+POST /api/support/ask & \{question\} $\rightarrow$ \{problem,steps[4],voice,audio\_url,video\_url\}\\
+WS /ws/alerts & \{alert,title,severity,kind\} fan-out, drop dead\\
+DB + media & events feed /api/perf; files \texttt{voice-<hash>.mp3} cached\\\bottomrule\end{tabular}\end{table}
+\begin{figure}[h]\centering\fbox{\parbox{0.9\linewidth}{\centering Sequence: Browser/Endpoint $\rightarrow$ Alerter $\rightarrow$ Detector $\rightarrow$ Rules (0ms) + LLM ($\sim$1100ms) $\rightarrow$ locks $\rightarrow$ DB $\rightarrow$ WS $\rightarrow$ browsers; Support $\rightarrow$ mp3/mp4 $\rightarrow$ /media.}}\caption{Orchestration sequence.}\end{figure}
+Failures: no key error; offline rules-only; slow LLM exposed in ms; no-store anti-stale; kill by listener PID.
+\subsection{Endpoint agent}
+\texttt{agent/agent.py} stdlib: register once, snapshot ipconfig + netstat TCP (conns/distinct/top8), heartbeat; burst distinct$\ge$40 or conns$\ge$120 POSTs kind=network. Coarse, not sniffing.
+
+\section{Implementation}
+Stack: FastAPI+Uvicorn+Jinja2+WS \cite{FastAPI24}, Atlas \cite{Mongo24}, OpenRouter frozen \cite{Ji25}, edge-tts \cite{EdgeTTS24}, moviepy \cite{Moviepy24}, httpx \cite{HTTPX24}, pytest \cite{Pytest24}. $\sim$2200 lines, 30+ labeled files.
+\begin{table}[h]\centering\caption{Modules.}\begin{tabular}{@{}lp{9cm}@{}} \toprule Module & Role\\\midrule main.py & mounts pages/APIs/static/media/WS; seeds 3\\
+routes\_web.py & /, /support, /users, /devices no-store\\
+routes\_api.py & health/employees/threats/stats/perf/support/devices\\
+ws.py & fan-out, drop dead\\
+rules.py & 14 patterns 0-1\\
+detector.py & rules+AI+locks\\
+alerter.py & save/risk/WS/5-trace ms\\
+support.py & diagnose+scrub+voice script\\
+client.py & one gateway (.env)\\
+voice/video.py & hash-cached mp3/mp4; honest fallback\\
+database.py & dual SQLite/Atlas + perf\\
+app.js/style.css & feed/inspector/graphs\\
+agent.py & stdlib register/beat/alarm\\\bottomrule\end{tabular}\end{table}
+\subsection{Detection trace}
+Received $\rightarrow$ Rules (signals score 1.0, 0.0ms) $\rightarrow$ AI otp/high ($\sim$1100ms) $\rightarrow$ Handling save+risk+WS ($\sim$5ms) $\rightarrow$ Done $\sim$1300ms. Inspector marks danger words, meter 100\%, HIGH badge.
+\subsection{Support example}
+Q OTP-WhatsApp $\rightarrow$ otp $\rightarrow$ never share / callback official / block / 2FA $\rightarrow$ mp3 + 4 slides mp4. Missing moviepy $\rightarrow$ honest card.
+\subsection{UI}
+Gradient, LIVE pill, hero, clickable feed, meter, twin graphs, tables, tabbed answer (Steps/Voice/Video), \texttt{nodownload} players.
+\section{Testing and Results}
+Env: Win11, Py3.13 venv, Uvicorn, live key+Atlas. Reproduce: \texttt{pytest tests -q}, \texttt{tests.eval\_big} (no key); \texttt{tests.eval\_detection} (key).
+\subsection{Eval A -- 70, 7 kinds (live 04 Oct 2026)}
+seed70 (10/kind). Source EVAL\_A\_summary.json.
+\begin{table}[h]\centering\caption{Eval-A.}\begin{tabular}{@{}lccccccc@{}} \toprule Base & Acc & P & R & F1 & FP & ms & kind\\\midrule rules & 0.886 & 1.0 & 0.867 & 0.929 & 0 & 0 & 0.886\\
+llm & 1.0 & 1.0 & 1.0 & 1.0 & 0 & 1091.8 & 0.943\\
+hybrid & 1.0 & 1.0 & 1.0 & 1.0 & 0 & 1304.5 & 0.943\\\bottomrule\end{tabular}\end{table}
+Per-kind hybrid: phishing 7/10, otp 10/10, bec 9/10, sqli/xss/malware/safe 10/10. Rules BEC 6/10. 5 confusions inside phishing family.
+\subsection{Eval-Big -- 1995 (test 399)}
+Rules acc 0.957 F1 0.975 FP0 FN17. Centroid kind 1.0 (57/57) harness-only synthetic overfit. Suite 3/3. Guide 4 steps + mp3/mp4. Disclosure: swap to IEEE-CIS/Fraud-R1 \cite{FinFraud25,FraudR125} before journal; LLM off big run (cost).
+\begin{figure}[h]\centering\fbox{\parbox{0.9\linewidth}{\centering Pipeline timings figure (see HTML Fig.6).}}\caption{Pipeline timings.}\end{figure}
+\begin{figure}[h]\centering\fbox{\parbox{0.9\linewidth}{\centering Dashboard screenshot placeholder -- include dashboard.png in Overleaf to show.}}\caption{Dashboard.}\end{figure}
+\begin{figure}[h]\centering\fbox{\parbox{0.9\linewidth}{\centering Support screenshot placeholder -- include support.png in Overleaf to show.}}\caption{Support.}\end{figure}
+\subsection{Discussion}
+Rules instant blind soft-BEC; LLM semantic needs key/net 1.1s; hybrid recall 1.0 kind 0.943. Scale ok (0.957); v2 ML 1.0 overfit by construction. No humans yet (N=30 pack); learning rests on guides + RCTs \cite{Pardos24,TutorCopilot24,Lain24} until run.
+\subsection{Pending Q1}
+Swap public data + XGBoost \cite{FinFraud25}, run N$\ge$30 uplift$\ge$15\% p$<$0.05, push repo+data. Now: 7-class loop live measured; Q1 pending real data + humans.
+\section{Conclusion and Future Work}
+Running loop in one server, free tools, tests + live measure. Fuses LLM detection \cite{Heiding24,Koide24} and adaptive training \cite{SchoniCHI25,Greco25} as four agents. Future: packet agent \cite{Rigaki24}, risk-from-completion, multilingual, analytics, RCT \cite{SchoniCHI25,Greco25,Pardos24}, public swap \cite{FinFraud25,FraudR125}, cascade \cite{CLASP25}, red-team \cite{SecEval225,AgentHarm25} pre-deploy.
+\appendix
+\section{Demo Script (3 min)}
+Landing 30s one server; Detection 45s simulate$\rightarrow$5 steps + ms; Support 60s OTP$\rightarrow$Steps/Voice/Video; Devices 30s beats + burst; Proof 15s pytest + /docs + /api/perf.
+\section{API Table}
+\begin{table}[h]\centering\begin{tabular}{@{}lll@{}} \toprule M & Endpoint & Purpose\\\midrule GET & /health & probe\\ GET/POST & /api/employees & list/add\\ POST & /api/threats & detect+save+push\\ GET & /api/threats/stats/perf & feed+graphs\\ POST & /api/support/ask & fix+media\\ POST/GET & /api/devices/* & register/beat/list\\ WS & /ws/alerts & push\\\bottomrule\end{tabular}\end{table}
+\begin{thebibliography}{122}
+\bibitem{Heiding24} F. Heiding et al., IEEE Access, 2024.
+\bibitem{Koide24} T. Koide et al., SecureComm 2024, arXiv:2402.18093.
+\bibitem{Desolda24} G. Desolda et al., arXiv:2410.07997, 2024.
+\bibitem{Nair25} R. Nair et al., ACSW 2025.
+\bibitem{Algo25} Algorithms 18(10):599, 2025.
+\bibitem{SchoniCHI25} L. Schoeni et al., CHI 2025.
+\bibitem{SchoniEU24} L. Schoeni et al., EuroUSEC 2024.
+\bibitem{Sriganthan25} K. Sriganthan et al., IEEE RTSI 2025.
+\bibitem{TrainShield25} TrainShield, ACM HT 2025.
+\bibitem{Greco25} F. Greco et al., arXiv:2512.01893, 2025.
+\bibitem{DAMOCLES24} DAMOCLES, CEUR 3700, 2024.
+\bibitem{Zhou25} L. Zhou et al., AMCIS 2025.
+\bibitem{SAGE26} Chen et al., SAGE, arXiv:2606.08146, 2026.
+\bibitem{RiskFirst26} Risk-First Teams, ACL 2026 Findings.
+\bibitem{AMLNet25} AMLNet, arXiv:2509.11595, 2025.
+\bibitem{AuditAgent25} AuditAgent, ICAIF 2025.
+\bibitem{AgenticCyber25} AgenticCyber, arXiv:2512.06396, 2025.
+\bibitem{MALCDF25} MALCDF, arXiv:2512.14846, 2025.
+\bibitem{Hmimou25} Hmimou et al., IEEE 2025.
+\bibitem{CyLens25} CyLens, arXiv:2502.20791, 2025.
+\bibitem{TradingAgents24} TradingAgents, arXiv:2412.20138, 2024.
+\bibitem{IJCISIM26} Agentic Fraud Real-Time Payments, IJCISIM 2026.
+\bibitem{UserRAG26} Barwani et al., arXiv:2601.21261, 2026.
+\bibitem{MemoPhish26} MemoPhishAgent, ACL 2026 Industry.
+\bibitem{Hasan25} Hasan et al., LLM-PEA, arXiv:2512.10104, 2025.
+\bibitem{Ji25} Ji and Kim, arXiv:2511.09606, 2025.
+\bibitem{CLASP25} Trad, CLASP, arXiv:2510.18585, 2025.
+\bibitem{HeidingIntent24} Heiding et al., arXiv:2412.00586, 2024.
+\bibitem{FinFraud25} FinFraud-LLM, IEEE ICDMW 2025.
+\bibitem{FinFRE25} FinFRE-RAG, arXiv:2512.13040, 2025.
+\bibitem{SENSAI25} Nelson et al., SENSAI, SIGCSE 2025.
+\bibitem{SYNAPSE26} SYNAPSE, arXiv:2607.14601, 2026.
+\bibitem{Frazier26} Frazier, arXiv:2604.13955, 2026.
+\bibitem{CurricuLLM26} CurricuLLM, arXiv:2601.04940, 2026.
+\bibitem{CyberMentor25} CyberMentor, arXiv:2501.09709, 2025.
+\bibitem{CyberQ24} Agrawal et al., AAAI 2024.
+\bibitem{FraudR125} Yang et al., Fraud-R1, ACL 2025.
+\bibitem{FraudBench25} MultiAgentFraudBench, arXiv:2511.06448, 2025.
+\bibitem{FinSafety26} FinSafetyBench, arXiv:2605.00706, 2026.
+\bibitem{XFin25} XFinBench, ACL 2025.
+\bibitem{FinBen24} FinBen, NeurIPS 2024.
+\bibitem{FinAgentBench25} Finance Agent Benchmark, arXiv:2508.00828, 2025.
+\bibitem{Investor25} InvestorBench, ACL 2025.
+\bibitem{FangHack24} Fang et al., arXiv:2402.06664, 2024.
+\bibitem{FangExploit24} Fang et al., arXiv:2404.08144, 2024.
+\bibitem{PentestGPT24} Deng et al., USENIX 2024.
+\bibitem{Rigaki24} Rigaki et al., arXiv:2409.11276, 2024.
+\bibitem{IDSAgent24} IDS-Agent, NeurIPS WS 2024.
+\bibitem{Houssel24} Houssel et al., arXiv:2408.04342, 2024.
+\bibitem{Tellache25} Tellache et al., arXiv:2508.10677, 2025.
+\bibitem{Castro25} Castro et al., IEEE CAI 2025.
+\bibitem{Saju26} Saju et al., PMLR 318, 2026.
+\bibitem{Honeypot24} LLM Honeypot, arXiv:2410.13919, 2024.
+\bibitem{SAGA25} SAGA, NDSS 2026, arXiv:2504.21034.
+\bibitem{Aegis25} AegisLLM, ICLR WS 2025.
+\bibitem{AIR26} AIR, ICML 2026.
+\bibitem{Park24} Park, arXiv:2403.19735, 2024.
+\bibitem{FinAgent24} FinAgent, KDD 2024.
+\bibitem{FinCon24} FinCon, NeurIPS 2024.
+\bibitem{HedgeAgents25} HedgeAgents, WWW 2025.
+\bibitem{FinRobot24} FinRobot, arXiv:2405.14767, 2024.
+\bibitem{Collude25} Ren et al., ICLR 2026.
+\bibitem{Qu25} Qu et al., ACL Industry 2025.
+\bibitem{AutoGen24} AutoGen Studio, arXiv:2408.15247, 2024.
+\bibitem{Lee25} C. Lee, arXiv:2502.04759, 2025.
+\bibitem{Kuikel25} Kuikel et al., arXiv:2506.13746, 2025.
+\bibitem{MultiGuard25} Xue et al., arXiv:2505.23803, 2025.
+\bibitem{PhishDebate25} Li et al., arXiv:2506.15656, 2025.
+\bibitem{NextGenPhish24} Afane et al., arXiv:2411.13874, 2024.
+\bibitem{MMPhish24} Lee et al., arXiv:2408.05941, 2024.
+\bibitem{KnowPhish24} KnowPhish, USENIX 2024.
+\bibitem{PhishAgent25} Cao et al., AAAI 2025.
+\bibitem{PhishOracle24} Kulkarni et al., arXiv:2407.20361, 2024.
+\bibitem{PhishLang24} PhishLang, arXiv:2408.05667, 2024.
+\bibitem{OneShotURL24} Rashid et al., arXiv:2409.14306, 2024.
+\bibitem{KorSmish24} KorSmishing, EMNLP Industry 2024.
+\bibitem{SmishX25} SmishX, SOUPS 2025.
+\bibitem{SpaLLM25} SpaLLM-Guard, arXiv:2501.04985, 2025.
+\bibitem{COPS24} COPS, IEEE CCNC 2024.
+\bibitem{SmishCheck25} Smish-Checker, IEEE WACV WS 2025.
+\bibitem{Persuade24} Shim et al., WWW Companion 2024.
+\bibitem{MozSmish25} MOZ-Smishing, AfricaNLP 2025.
+\bibitem{BECReview25} BEC Review, Computers \& Security 2025.
+\bibitem{StruQ24} StruQ, USENIX 2025.
+\bibitem{Hierarchy24} Instruction Hierarchy, arXiv:2404.13208, 2024.
+\bibitem{PromptVsTune24} Prompt vs Finetune, MLKE 2024.
+\bibitem{Pardos24} Pardos et al., PLoS ONE 2024.
+\bibitem{TutorCopilot24} Tutor CoPilot, arXiv:2410.03017, 2024.
+\bibitem{Kestin25} Kestin et al., 2025.
+\bibitem{Khanmigo25} Oreopoulos et al., 2025-26.
+\bibitem{Vanzo25} Vanzo et al., ACL 2025.
+\bibitem{Blasco24} Blasco et al., SSRN 2024.
+\bibitem{ChenCHI24} Chen et al., CHI 2024.
+\bibitem{Lain24} Lain et al., CCS 2024.
+\bibitem{GrecoCEUR24} Greco et al., CEUR 3700, 2024.
+\bibitem{Codebook24} Saka et al., arXiv:2408.08967, 2024.
+\bibitem{FinQA24} Fatemi et al., ICAIF 2024.
+\bibitem{FraudRobust25} Fraud-R1 robustness, 2025.
+\bibitem{PageAgent25} PhishAgent multimodal, AAAI 2025.
+\bibitem{Cybench25} Cybench, ICLR 2025.
+\bibitem{SecEval225} CyberSecEval 2, arXiv:2404.13161, 2024.
+\bibitem{SecEval325} CyberSecEval 3, arXiv:2408.01605, 2024.
+\bibitem{AgentHarm25} AgentHarm, ICLR 2025.
+\bibitem{HarmBench24} HarmBench, ICML 2024.
+\bibitem{SWEbench24} SWE-bench, ICLR 2024.
+\bibitem{AgentBench24} AgentBench, ICLR 2024.
+\bibitem{SWEagent24} SWE-agent, NeurIPS 2024.
+\bibitem{FastAPI24} FastAPI/Uvicorn/Jinja2/WS docs, 2024-26.
+\bibitem{Mongo24} MongoDB Atlas docs, 2024-26.
+\bibitem{EdgeTTS24} edge-tts docs, 2024-26.
+\bibitem{Moviepy24} moviepy/imageio-ffmpeg docs, 2024-26.
+\bibitem{HTTPX24} httpx docs, 2024-26.
+\bibitem{Pytest24} pytest docs, 2024-26.
+\bibitem{Docker24} Docker/Render docs, 2024-26.
+\bibitem{OWASP24} OWASP Top 10, 2024.
+\bibitem{NIST24} NIST SP 800-83, 2024.
+\bibitem{PyStd24} Python stdlib (netstat/ipconfig), 2024.
+\bibitem{BERT24} BERT/RF/XGBoost baselines, 2024-25.
+\bibitem{EvalMethod24} t-test/SUS method, 2024.
+\bibitem{ZhangSME25} Zhang et al., LLM phishing benchmark for small enterprises, 2025.
+\bibitem{OWASPASVS24} OWASP ASVS (input validation, output encoding for sqli/xss), 2024.
+\bibitem{NISTCSF24} NIST Cybersecurity Framework 2.0 (detect/respond/recover mapping), 2024.
+\end{thebibliography}
+\end{document}

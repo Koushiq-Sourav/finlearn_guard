@@ -11,3 +11,7 @@ edge-tts>=7.0
 moviepy>=2.0
 imageio-ffmpeg>=0.5
 pymongo>=4.0
+
+# EVAL-ONLY (paper Sec 6 rerun + figures) lives in requirements-eval.txt
+# so deploys stay light. Install it only to reproduce docs/EVAL_R_summary.json:
+#   .venv\Scripts\python -m pip install -r requirements-eval.txt

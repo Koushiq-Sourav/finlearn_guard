@@ -1,0 +1,13 @@
+# CONTRIBUTION: Eval-only packages (Q1 Sec 6 rerun + figures). NOT for Render.
+#
+# Install only when reproducing the paper numbers:
+#   .venv\Scripts\python -m pip install -r requirements-eval.txt
+#   .venv\Scripts\python -m tests.eval_real [--with-llm 10]
+#   .venv\Scripts\python docs\figs\make_figs.py
+#
+# Kept separate so the deploy requirements.txt stays light.
+
+scikit-learn>=1.4
+xgboost>=2.0
+matplotlib>=3.8
+scipy>=1.12

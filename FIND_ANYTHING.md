@@ -52,6 +52,19 @@ papers = `docs/`, demo = `live/` + `instructor/`.
 | Live-edit guide book (PDF) | `docs/GUIDE_BOOK.pdf` (editable source: `docs/GUIDE_BOOK.md`) |
 | Architecture / API table / report points | `instructor/` (4 txt files) |
 
+## I want REAL eval data (Q1 honesty fix, no synthetic)
+
+| Want | Open | Section |
+|---|---|---|
+| Which real file feeds which label | `data/real/README_REAL_DATA.md` | mapping table |
+| Download the 4 sources (one job) | `data/real/download_real.py` | PART 1 Fraud-R1 / PART 2 SMS / PART 3 Nazario / PART 4 Payloads |
+| Convert raw -> project CSV (one job) | `data/real/build_real_labels.py` | PART 1-4 per source + PART 5 merge |
+| Honest eval set (1,494 real rows) | `data/real/labels_real.csv` | columns = `id,title,body,label,label_full,severity` |
+| Rerun rules+XGB+hybrid on real data | `tests/eval_real.py` (§1-§5) | out `docs/EVAL_R_summary.json` |
+| Real figures for Sec 6 (from JSON) | `docs/figs/make_figs.py` | out `docs/figs/fig-evalR-F1.png`, `fig-perkind-recall.png` (upload `figs/` to Overleaf) |
+| Eval-only pip packages (not deploy) | `requirements-eval.txt` | sklearn/xgb/mpl/scipy |
+| Old synthetic set (comparison only) | `data/eval/labels2000_v2.csv` + `build_2000.py` | disclosed synthetic, do not mix |
+
 ## I want CONFIG / SECRETS (never show on projector, never push to git)
 | Want | Open |
 |---|---|

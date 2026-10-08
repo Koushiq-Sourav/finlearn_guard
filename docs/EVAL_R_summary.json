@@ -1,0 +1,83 @@
+{
+  "n_real": 1494,
+  "dist": {
+    "safe": 300,
+    "otp": 300,
+    "phishing": 300,
+    "xss": 100,
+    "malware": 94,
+    "bec": 300,
+    "sqli": 100
+  },
+  "rules_all": {
+    "n": 1494,
+    "acc": 0.5616,
+    "P": 1.0,
+    "R": 0.4514,
+    "F1": 0.622,
+    "kind_acc": 0.4123,
+    "per_kind_recall": {
+      "phishing": 0.3167,
+      "otp": 0.26,
+      "bec": 0.43,
+      "sqli": 0.93,
+      "xss": 0.98,
+      "malware": 0.4894,
+      "safe": 1.0
+    },
+    "mean_ms": 0.058
+  },
+  "xgb_80_20": {
+    "n": 299,
+    "acc": 0.9766,
+    "P": 0.9957,
+    "R": 0.9749,
+    "F1": 0.9852,
+    "kind_acc": 0.9766,
+    "per_kind_recall": {
+      "phishing": 0.9833,
+      "otp": 0.9333,
+      "bec": 1.0,
+      "sqli": 1.0,
+      "xss": 1.0,
+      "malware": 0.9474,
+      "safe": 0.9833
+    },
+    "test_n": 299,
+    "test_dist": {
+      "sqli": 20,
+      "otp": 60,
+      "safe": 60,
+      "phishing": 60,
+      "xss": 20,
+      "bec": 60,
+      "malware": 19
+    },
+    "mcnemar": {
+      "rules_only_ok": 2,
+      "xgb_only_ok": 130,
+      "chi2": 122.189,
+      "p": 0.0
+    },
+    "rules_on_test_acc": 0.5485
+  },
+  "hybrid_sample": {
+    "n": 70,
+    "acc": 0.9714,
+    "P": 0.9677,
+    "R": 1.0,
+    "F1": 0.9836,
+    "kind_acc": 0.5857,
+    "per_kind_recall": {
+      "phishing": 1.0,
+      "otp": 1.0,
+      "bec": 1.0,
+      "sqli": 1.0,
+      "xss": 1.0,
+      "malware": 1.0,
+      "safe": 0.8
+    },
+    "sample_n": 70,
+    "llm_ok_rate": 1.0
+  }
+}
